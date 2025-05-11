@@ -1,10 +1,10 @@
+import Batch from "../model/batch.js";
 import Chemical from "../model/chemical.js";
 import Instrument from "../model/instrument.js";
 import Media from "../model/media.js";
 import Product from "../model/product.js";
 import ProductIntimate from "../model/productIntimate.js";
 import User from "../model/user.js";
-import Batch from "../model/Batch.js";
 
 export const getBatchCounts = async (req, res) => {
   try {

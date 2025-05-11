@@ -1,28 +1,31 @@
-import { message } from "antd";
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import apiClient from "../utils/interceptor";
+import {message} from 'antd';
+import {useEffect, useState} from 'react';
+import {useNavigate} from 'react-router-dom';
+import apiClient from '../utils/interceptor';
 
 const AddProduct = () => {
-  const [instruments, setInstruments] = useState([]);
+  const [testIncrediantList, setTestIncrediantList] = useState([]);
   const navigate = useNavigate();
-  const [productName, setProductName] = useState("");
+  const [productName, setProductName] = useState('');
   const [productVariants, setProductVariants] = useState([
-    { length: "", width: "" },
+    {length: '', lengthUnit: 'Meter', width: '', widthUnit: 'Meter'},
   ]);
   const [tests, setTests] = useState([
     {
-      testName: "",
-      specifications: "",
-      acceptanceCriteria: "",
-      rejectionCriteria: "",
-      instrument: "",
+      testName: '',
+      specifications: '',
+      acceptanceCriteria: '',
+      rejectionCriteria: '',
+      instrument: '',
     },
   ]);
   const [loading, setLoading] = useState(false);
 
   const handleAddVariant = () => {
-    setProductVariants([...productVariants, { length: "", width: "" }]);
+    setProductVariants([
+      ...productVariants,
+      {length: '', lengthUnit: '', width: '', widthUnit: ''},
+    ]);
   };
 
   const handleRemoveVariant = (index) => {
@@ -33,11 +36,11 @@ const AddProduct = () => {
     setTests([
       ...tests,
       {
-        testName: "",
-        specifications: "",
-        acceptanceCriteria: "",
-        rejectionCriteria: "",
-        instrument: "",
+        testName: '',
+        specifications: '',
+        acceptanceCriteria: '',
+        rejectionCriteria: '',
+        instrument: '',
       },
     ]);
   };
@@ -52,42 +55,58 @@ const AddProduct = () => {
 
     const productData = {
       productName,
-      productVariants: productVariants,
+      productVariants: productVariants.map((variant) => ({
+        length: variant.length,
+        lengthUnit: variant.lengthUnit,
+        width: variant.width,
+        widthUnit: variant.widthUnit,
+      })),
       tests,
     };
 
     try {
-      const response = await apiClient.post("/product/addProduct", productData);
-      message.success("Product added successfully!");
+      const response = await apiClient.post('/product/addProduct', productData);
+      message.success('Product added successfully!');
       setTimeout(() => {
-        navigate("/products");
+        navigate('/products');
       }, 1000);
-      console.log(response.data);
     } catch (error) {
-      console.error("Error adding product:", error);
-      message.error("Failed to add product.");
+      console.error('Error adding product:', error);
+      message.error('Failed to add product.');
     } finally {
       setLoading(false);
     }
   };
   useEffect(() => {
-    const fetchInstruments = async () => {
+    const fetchData = async () => {
       try {
-        const response = await apiClient.get("/instrument/getAllInstruments");
-        setInstruments(response.data || []);
+        const [instrumentsResponse, chemicalsResponse, mediasResponse] =
+          await Promise.all([
+            apiClient.get('/instrument/getAllInstruments'),
+            apiClient.get('/chemical/getAllChemicals'),
+            apiClient.get('/media/getAllMedia'),
+          ]);
+
+        const combinedList = [
+          ...(instrumentsResponse.data || []),
+          ...(chemicalsResponse.data || []),
+          ...(mediasResponse.data || []),
+        ];
+
+        setTestIncrediantList(combinedList);
       } catch (error) {
-        console.error("Error fetching products:", error);
-        message.error("Failed to fetch products.");
+        console.error('Error fetching data:', error);
+        message.error('Failed to fetch data.');
       }
     };
 
-    fetchInstruments();
+    fetchData();
   }, []);
 
   return (
-    <div className="px-4 py-2 rounded-xl bg-white h-full border border-2 border-gray-200 text-start">
+    <div className="px-4 py-2 rounded-xl bg-white h-full border-2 border-gray-200 text-start">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
-        <div style={{ fontFamily: "Roboto, sans-serif" }}>
+        <div style={{fontFamily: 'Roboto, sans-serif'}}>
           <h1 className="font-bold text-lg md:text-lg text-themeColor">
             Add Product
           </h1>
@@ -97,7 +116,6 @@ const AddProduct = () => {
         </div>
       </div>
       <form onSubmit={handleSubmit}>
-        {/* Product Name */}
         <div className="mb-4">
           <label className="block text-gray-700 mb-2">
             Product Name:
@@ -111,40 +129,87 @@ const AddProduct = () => {
           </label>
         </div>
 
-        {/* Product Variants */}
         <div className="mb-4">
           <h2 className="font-semibold text-gray-700 mb-2">
             Product Variants:
           </h2>
           {productVariants.map((variant, index) => (
             <div key={index} className="grid grid-cols-2 gap-4 mb-2">
-              <input
-                type="text"
-                placeholder="Length"
-                required
-                value={variant.length}
-                onChange={(e) =>
-                  setProductVariants(
-                    productVariants.map((v, i) =>
-                      i === index ? { ...v, length: e.target.value } : v
+              <div className="flex gap-2 w-full">
+                <input
+                  type="number"
+                  placeholder="Length"
+                  required
+                  value={variant.length}
+                  onChange={(e) =>
+                    setProductVariants(
+                      productVariants.map((v, i) =>
+                        i === index ? {...v, length: e.target.value} : v
+                      )
                     )
-                  )
-                }
-                className="px-3 py-2 border border-gray-300 bg-gray-50 shadow-sm rounded-md focus:outline-none focus:ring-themeColor focus:border-themeColor"
-              />
-              <input
-                type="text"
-                placeholder="Width (Optional)"
-                value={variant.width}
-                onChange={(e) =>
-                  setProductVariants(
-                    productVariants.map((v, i) =>
-                      i === index ? { ...v, width: e.target.value } : v
+                  }
+                  className="px-3 py-2 w-9/12 border border-gray-300 bg-gray-50 shadow-sm rounded-md focus:outline-none focus:ring-themeColor focus:border-themeColor"
+                />
+                <select
+                  required
+                  className="w-3/12  px-3 py-2 border border-gray-300 bg-gray-50 rounded-md shadow-sm focus:outline-none focus:ring-themeColor focus:border-themeColor"
+                  value={variant.lengthUnit}
+                  onChange={(e) =>
+                    setProductVariants(
+                      productVariants.map((v, i) =>
+                        i === index ? {...v, lengthUnit: e.target.value} : v
+                      )
                     )
-                  )
-                }
-                className="px-3 py-2 border border-gray-300 bg-gray-50 shadow-sm rounded-md focus:outline-none focus:ring-themeColor focus:border-themeColor"
-              />
+                  }
+                >
+                  <option value="" disabled>
+                    Length
+                  </option>
+                  <option value="Meter">Meter</option>
+                  <option value="Liter">Liter</option>
+                  <option value="Kg">Kg</option>
+                  <option value="Inch">Inch</option>
+                  <option value="Centimeter">Centimeter</option>
+                  <option value="Milimeter">Milimeter</option>
+                </select>
+              </div>
+              <div className="flex gap-2 w-full">
+                <input
+                  type="number"
+                  placeholder="Width (Optional)"
+                  value={variant.width}
+                  onChange={(e) =>
+                    setProductVariants(
+                      productVariants.map((v, i) =>
+                        i === index ? {...v, width: e.target.value} : v
+                      )
+                    )
+                  }
+                  className="px-3 py-2 w-9/12 border border-gray-300 bg-gray-50 shadow-sm rounded-md focus:outline-none focus:ring-themeColor focus:border-themeColor"
+                />
+                <select
+                  required
+                  className="w-3/12  px-3 py-2 border border-gray-300 bg-gray-50 rounded-md shadow-sm focus:outline-none focus:ring-themeColor focus:border-themeColor"
+                  value={variant.widthUnit}
+                  onChange={(e) =>
+                    setProductVariants(
+                      productVariants.map((v, i) =>
+                        i === index ? {...v, widthUnit: e.target.value} : v
+                      )
+                    )
+                  }
+                >
+                  <option value="" disabled>
+                    Width
+                  </option>
+                  <option value="Meter">Meter</option>
+                  <option value="Liter">Liter</option>
+                  <option value="Kg">Kg</option>
+                  <option value="Inch">Inch</option>
+                  <option value="Centimeter">Centimeter</option>
+                  <option value="Milimeter">Milimeter</option>
+                </select>
+              </div>
               {index > 0 && (
                 <button
                   type="button"
@@ -165,7 +230,6 @@ const AddProduct = () => {
           </button>
         </div>
 
-        {/* Tests */}
         <div className="mb-4">
           <h2 className="font-semibold text-gray-700 mb-2">Tests:</h2>
           {tests.map((test, index) => (
@@ -178,7 +242,7 @@ const AddProduct = () => {
                 onChange={(e) =>
                   setTests(
                     tests.map((t, i) =>
-                      i === index ? { ...t, testName: e.target.value } : t
+                      i === index ? {...t, testName: e.target.value} : t
                     )
                   )
                 }
@@ -192,7 +256,7 @@ const AddProduct = () => {
                 onChange={(e) =>
                   setTests(
                     tests.map((t, i) =>
-                      i === index ? { ...t, specifications: e.target.value } : t
+                      i === index ? {...t, specifications: e.target.value} : t
                     )
                   )
                 }
@@ -207,7 +271,7 @@ const AddProduct = () => {
                   setTests(
                     tests.map((t, i) =>
                       i === index
-                        ? { ...t, acceptanceCriteria: e.target.value }
+                        ? {...t, acceptanceCriteria: e.target.value}
                         : t
                     )
                   )
@@ -223,7 +287,7 @@ const AddProduct = () => {
                   setTests(
                     tests.map((t, i) =>
                       i === index
-                        ? { ...t, rejectionCriteria: e.target.value }
+                        ? {...t, rejectionCriteria: e.target.value}
                         : t
                     )
                   )
@@ -236,19 +300,16 @@ const AddProduct = () => {
                 onChange={(e) =>
                   setTests(
                     tests.map((t, i) =>
-                      i === index ? { ...t, instrument: e.target.value } : t
+                      i === index ? {...t, instrument: e.target.value} : t
                     )
                   )
                 }
                 className="mb-2 block w-full px-3 py-2 border border-gray-300 bg-gray-50 shadow-sm rounded-md focus:outline-none focus:ring-themeColor focus:border-themeColor"
               >
-                <option value="">Select Instrument</option>
-                {instruments.map((instrument) => (
-                  <option
-                    key={instrument._id}
-                    value={instrument.instrumentName}
-                  >
-                    {instrument.instrumentName}
+                <option value="">Select Instrument/Chemical/Media</option>
+                {testIncrediantList.map((icm) => (
+                  <option key={icm._id} value={icm._id}>
+                    {icm.chemicalName || icm.instrumentName || icm.mediaName}
                   </option>
                 ))}
               </select>
@@ -273,14 +334,13 @@ const AddProduct = () => {
           </button>
         </div>
 
-        {/* Submit Button */}
         <div className="mt-10 text-center">
           <button
             type="submit"
             className="py-2 px-6 w-40 bg-themeGradient hover:bg-themeGradientHover text-white font-semibold rounded-md shadow-sm hover:bg-themeColor2"
             disabled={loading}
           >
-            {loading ? "Saving..." : "SAVE"}
+            {loading ? 'Saving...' : 'SAVE'}
           </button>
         </div>
       </form>

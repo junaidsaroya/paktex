@@ -1,12 +1,15 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
-const FileSchema = new mongoose.Schema({
-  projectName: { type: String, required: true },
-  fileName: { type: String, required: true },
-  fileUrl: { type: String, required: true },
-  createdAt: { type: Date, default: Date.now },
+const fileSchema = new mongoose.Schema({
+  productName: String,
+  fileName: String,
+  filePath: String,
+  uploadedAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
-const File = mongoose.model("File", FileSchema);
+const File = mongoose.model('File', fileSchema);
 
 export default File;

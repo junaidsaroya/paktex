@@ -1,15 +1,15 @@
-import { message } from "antd";
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import apiClient from "../utils/interceptor";
+import {message} from 'antd';
+import {useState} from 'react';
+import {useNavigate} from 'react-router-dom';
+import apiClient from '../utils/interceptor';
 
 const AddChemical = () => {
   const navigate = useNavigate();
-  const [chemicalName, setChemicalName] = useState("");
-  const [batchNo, setBatchNo] = useState("");
-  const [mfgDate, setMfgDate] = useState("");
-  const [expDate, setExpDate] = useState("");
-  const [brand, setBrand] = useState("");
+  const [chemicalName, setChemicalName] = useState('');
+  const [batchNo, setBatchNo] = useState('');
+  const [mfgDate, setMfgDate] = useState('');
+  const [expDate, setExpDate] = useState('');
+  const [brand, setBrand] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -25,30 +25,34 @@ const AddChemical = () => {
     };
 
     try {
-      // Make API call with the token in the headers
-      const response = await apiClient.post('/chemical/addChemical', chemicalData);
+      const response = await apiClient.post(
+        '/chemical/addChemical',
+        chemicalData
+      );
 
-      message.success("Chemical added successfully!");
+      message.success('Chemical added successfully!');
       setTimeout(() => {
-        navigate("/chemicals");
+        navigate('/chemicals');
       }, 1000);
       console.log(response.data);
     } catch (error) {
-      console.error("Error adding chemical:", error);
-      message.error("Failed to add chemical.");
+      console.error('Error adding chemical:', error);
+      message.error('Failed to add chemical.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="px-4 py-2 rounded-xl bg-white h-full border border-2 border-gray-200 text-start">
+    <div className="px-4 py-2 rounded-xl bg-white h-full border-2 border-gray-200 text-start">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
-        <div style={{ fontFamily: "Roboto, sans-serif" }}>
+        <div style={{fontFamily: 'Roboto, sans-serif'}}>
           <h1 className="font-bold text-lg md:text-lg text-themeColor">
             Add Chemical
           </h1>
-          <p className="text-xs text-gray-500 font-semibold">Add new chemical</p>
+          <p className="text-xs text-gray-500 font-semibold">
+            Add new chemical
+          </p>
         </div>
       </div>
       <form onSubmit={handleSubmit}>
@@ -120,14 +124,13 @@ const AddChemical = () => {
           </div>
         </div>
 
-        {/* Submit Button */}
         <div className="mt-10 text-center">
           <button
             type="submit"
             className="py-2 px-6 w-40 bg-themeGradient hover:bg-themeGradientHover text-white font-semibold rounded-md shadow-sm hover:bg-themeColor2"
             disabled={loading}
           >
-            {loading ? "Saving..." : "SAVE"}
+            {loading ? 'Saving...' : 'SAVE'}
           </button>
         </div>
       </form>

@@ -1,68 +1,70 @@
-import File from "../model/Files.js";
+import multer from 'multer';
+import fs from 'fs';
+import path from 'path';
+import File from '../model/Files.js';
 
-// Add a new file
-export const addFile = async (req, res) => {
-  try {
-    const { productName, fileName, fileUrl } = req.body;
+const uploadPath = 'D:/paktex';
 
-    const newFile = new File({ productName, fileName, fileUrl });
-    await newFile.save();
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadPath);
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname);
+  },
+});
 
-    res
-      .status(201)
-      .json({ message: "File uploaded successfully!", file: newFile });
-  } catch (error) {
-    res.status(500).json({ message: "Error saving file", error });
-  }
-};
+const upload = multer({storage}).any();
 
-// Get all files for a specific product
-export const getFilesByProduct = async (req, res) => {
-  try {
-    const { productName } = req.params;
-    const files = await File.find({ productName });
-
-    res.status(200).json(files);
-  } catch (error) {
-    res.status(500).json({ message: "Error retrieving files", error });
-  }
-};
-
-// Update file details
-export const updateFile = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { fileName, fileUrl } = req.body;
-
-    const updatedFile = await File.findByIdAndUpdate(
-      id,
-      { fileName, fileUrl },
-      { new: true }
-    );
-
-    if (!updatedFile) {
-      return res.status(404).json({ message: "File not found" });
+export const uploadHandler = (req, res) => {
+  upload(req, res, async (err) => {
+    if (err) {
+      console.error('Multer error:', err);
+      return res.status(500).json({message: 'Multer error', error: err});
     }
 
-    res.status(200).json({ message: "File updated successfully", file: updatedFile });
-  } catch (error) {
-    res.status(500).json({ message: "Error updating file", error });
-  }
-};
+    const {productName} = req.body;
 
-// Delete a file
-export const deleteFile = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const deletedFile = await File.findByIdAndDelete(id);
-
-    if (!deletedFile) {
-      return res.status(404).json({ message: "File not found" });
+    if (!productName) {
+      return res.status(400).json({message: 'productName is required'});
     }
 
-    res.status(200).json({ message: "File deleted successfully" });
-  } catch (error) {
-    res.status(500).json({ message: "Error deleting file", error });
-  }
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({message: 'No file uploaded'});
+    }
+
+    const productFolder = path.join(uploadPath, productName);
+    if (!fs.existsSync(productFolder)) {
+      fs.mkdirSync(productFolder, {recursive: true});
+    }
+
+    const uploadedFile = req.files[0];
+    const oldPath = uploadedFile.path;
+    const newPath = path.join(productFolder, uploadedFile.originalname);
+
+    // Replace existing file
+    if (fs.existsSync(newPath)) {
+      fs.unlinkSync(newPath);
+    }
+
+    fs.renameSync(oldPath, newPath);
+
+    try {
+      const newFile = new File({
+        productName,
+        fileName: uploadedFile.originalname,
+        filePath: newPath.replace(/\\/g, '/'),
+      });
+
+      await newFile.save();
+
+      res.status(200).json({
+        message: 'File uploaded successfully',
+        path: newFile.filePath,
+      });
+    } catch (error) {
+      console.error('DB error:', error);
+      res.status(500).json({message: 'Database error', error});
+    }
+  });
 };

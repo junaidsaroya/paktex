@@ -1,16 +1,15 @@
-import React from "react";
-import { message } from "antd";
-import { useNavigate } from "react-router-dom";
+import {message} from 'antd';
+import {useNavigate} from 'react-router-dom';
 const LoggedInUserPopup = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("userName");
-    localStorage.removeItem("userId");
-    message.success("Logged out successfully!");
+    localStorage.removeItem('token');
+    localStorage.removeItem('userName');
+    localStorage.removeItem('userId');
+    message.success('Logged out successfully!');
     setTimeout(() => {
-      navigate("/login", { replace: true });
+      navigate('/login', {replace: true});
     }, 1000);
   };
 

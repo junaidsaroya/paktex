@@ -1,22 +1,23 @@
-import { Popconfirm, message } from "antd";
-import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import apiClient from "../utils/interceptor";
+import {Popconfirm, message} from 'antd';
+import {useEffect, useState} from 'react';
+import {Link} from 'react-router-dom';
+import apiClient from '../utils/interceptor';
+import ProductionCalculator from '../components/ProductionCalculator';
 
 const BatchManagement = () => {
   const [batches, setBatches] = useState([]);
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchBatches = async () => {
       setLoading(true);
       try {
-        const response = await apiClient.get("/batch/getAllBatch");
+        const response = await apiClient.get('/batch/getAllBatch');
         setBatches(response.data || []);
       } catch (error) {
-        console.error("Error fetching batches:", error);
-        message.error("Failed to fetch batches.");
+        console.error('Error fetching batches:', error);
+        message.error('Failed to fetch batches.');
       } finally {
         setLoading(false);
       }
@@ -30,30 +31,30 @@ const BatchManagement = () => {
   };
 
   const handleRefresh = () => {
-    setStatus("");
+    setStatus('');
   };
 
   const handleDelete = async (id) => {
     try {
       await apiClient.delete(`/batch/deletebatch/${id}`);
-      message.success("Batch deleted successfully!");
+      message.success('Batch deleted successfully!');
       setBatches(batches.filter((batch) => batch._id !== id));
     } catch (error) {
-      console.error("Error deleting batch:", error);
-      message.error("Failed to delete batch.");
+      console.error('Error deleting batch:', error);
+      message.error('Failed to delete batch.');
     }
   };
   const handleStatusToggle = async (id, currentStatus) => {
     try {
-      await updateStatus(id, !currentStatus); // Toggle status
+      await updateStatus(id, !currentStatus);
       setBatches((prevBatches) =>
         prevBatches.map((batch) =>
-          batch._id === id ? { ...batch, status: !currentStatus } : batch
+          batch._id === id ? {...batch, status: !currentStatus} : batch
         )
       );
     } catch (error) {
-      console.error("Failed to update batch status:", error);
-      message.error("Error updating batch status.");
+      console.error('Failed to update batch status:', error);
+      message.error('Error updating batch status.');
     }
   };
 
@@ -64,20 +65,20 @@ const BatchManagement = () => {
       });
       return response.data;
     } catch (error) {
-      console.error("Error updating batch status:", error);
+      console.error('Error updating batch status:', error);
       throw error;
     }
   };
 
   const filteredBatches = batches.filter((batch) => {
-    const statusMatch = status === "" || batch.status.toString() === status;
+    const statusMatch = status === '' || batch.status.toString() === status;
     return statusMatch;
   });
 
   return (
-    <div className="px-4 py-2 rounded-xl bg-white h-full border border-2 border-gray-200">
+    <div className="px-4 py-2 rounded-xl bg-white h-full border-2 border-gray-200">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-        <div style={{ fontFamily: "Roboto, sans-serif" }}>
+        <div style={{fontFamily: 'Roboto, sans-serif'}}>
           <h1 className="font-bold text-lg md:text-xl text-start text-themeColor">
             Batches
           </h1>
@@ -107,7 +108,7 @@ const BatchManagement = () => {
             id="status"
             value={status}
             onChange={handleStatusChange}
-            className="w-full rounded-md px-3 py-2 border border-gray-300 bg-gray-50 rounded-lg focus:outline-none focus:ring-themeColor focus:border-themeColor"
+            className="w-full rounded-md px-3 py-2 border border-gray-300 bg-gray-50 focus:outline-none focus:ring-themeColor focus:border-themeColor"
           >
             <option value="">All</option>
             <option value="true">Active</option>
@@ -116,87 +117,103 @@ const BatchManagement = () => {
         </div>
       </div>
 
-      <div className="relative">
-        <div className="max-h-[500px] scrollbar-hide">
-          <div className="overflow-x-auto overflow-hidden rounded-lg border border-gray-200">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-200 text-gray-600 font-semibold border border-gray-200">
-                <tr>
-                  <th className="py-3 px-4">Product</th>
-                  <th className="py-3 px-4">Batch Number</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
+      <div className="flex gap-4 w-full">
+        <div className="relative w-1/2">
+          <div className="max-h-[500px] scrollbar-hide">
+            <div className="overflow-x-auto overflow-hidden rounded-lg border border-gray-200">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-200 text-gray-600 font-semibold border border-gray-200">
                   <tr>
-                    <td colSpan="4" className="text-center py-4">
-                      Loading...
-                    </td>
+                    <th className="py-3 px-4">Product</th>
+                    <th className="py-3 px-4">Batch No</th>
+                    <th className="py-3 px-4">Batch Size</th>
+                    <th className="py-3 px-4">Product Size</th>
+                    <th className="py-3 px-4">Status</th>
+                    <th className="py-3 px-4">Actions</th>
                   </tr>
-                ) : filteredBatches.length > 0 ? (
-                  filteredBatches.map((batch) => (
-                    <tr
-                      key={batch._id}
-                      className="hover:bg-gray-50 transition-colors duration-200 border-t bg-white divide-y divide-gray-200 text-gray-600"
-                    >
-                      <td className="py-4 px-4">{batch.productName}</td>
-                      <td className="py-4 px-4">{batch.batchNumber}</td>
-                      <td className="py-4 px-4">
-                        <div className="flex items-center justify-center">
-                          <div
-                            className={`relative inline-block w-11 h-5 transition duration-200 ease-linear rounded-full cursor-pointer ${
-                              batch.status ? "bg-themeColor" : "bg-gray-300"
-                            }`}
-                            onClick={() =>
-                              handleStatusToggle(batch._id, batch.status)
-                            }
-                          >
-                            <span
-                              className={`absolute block w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-200 ease-in-out ${
-                                batch.status ? "translate-x-6" : "translate-x-0"
-                              }`}
-                            ></span>
-                          </div>
-                        </div>
+                </thead>
+                <tbody>
+                  {loading ? (
+                    <tr>
+                      <td colSpan="6" className="text-center py-4">
+                        Loading...
                       </td>
+                    </tr>
+                  ) : filteredBatches.length > 0 ? (
+                    filteredBatches.map((batch) => (
+                      <tr
+                        key={batch._id}
+                        className="hover:bg-gray-50 transition-colors duration-200 border-t bg-white divide-y divide-gray-200 text-gray-600"
+                      >
+                        <td className="py-4 px-4">{batch.productName}</td>
+                        <td className="py-4 px-4">{batch.batchNumber}</td>
+                        <td className="py-4 px-4">{batch.batchLength}</td>
+                        <td className="py-4 px-4">
+                          {batch.productSize.length > 0 && (
+                            <>
+                              {batch.productSize[0].length}{' '}
+                              {batch.productSize[0].lengthType} {'/'}
+                              {batch.productSize[0].width}{' '}
+                              {batch.productSize[0].widthType}
+                            </>
+                          )}
+                        </td>
 
-                      <td className="py-4 px-4 space-x-2">
-                        <div className="flex gap-2 justify-center">
-                          {/* <i className="fa-regular fa-eye"></i>
-                          <i className="fa-regular fa-pen-to-square"></i> */}
-                          <Popconfirm
-                            title="Are you sure you want to delete this product?"
-                            okText="Yes"
-                            cancelText="No"
-                            onConfirm={() => handleDelete(batch._id)}
-                          >
-                            <button className="py-1 px-4 bg-redGradient hover:bg-redGradientHover text-white font-semibold rounded-md shadow-sm hover:bg-themeColor2">
-                              <i className="fa-regular fa-trash-can pr-2"></i>{" "}
-                              Delete
-                            </button>
-                          </Popconfirm>
-                          <button className="py-1 px-4 bg-themeGradient hover:bg-themeGradientHover text-white font-semibold rounded-md shadow-sm hover:bg-themeColor2">
-                            Dispense
-                          </button>
+                        <td className="py-4 px-4">
+                          <div className="flex items-center justify-center">
+                            <div
+                              className={`relative inline-block w-11 h-5 transition duration-200 ease-linear rounded-full cursor-pointer ${
+                                batch.status ? 'bg-themeColor' : 'bg-gray-300'
+                              }`}
+                              onClick={() =>
+                                handleStatusToggle(batch._id, batch.status)
+                              }
+                            >
+                              <span
+                                className={`absolute block w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-200 ease-in-out ${
+                                  batch.status
+                                    ? 'translate-x-6'
+                                    : 'translate-x-0'
+                                }`}
+                              ></span>
+                            </div>
+                          </div>
+                        </td>
+
+                        <td className="py-4 px-4 space-x-2">
+                          <div className="flex gap-2 justify-center">
+                            <Popconfirm
+                              title="Are you sure you want to delete this product?"
+                              okText="Yes"
+                              cancelText="No"
+                              onConfirm={() => handleDelete(batch._id)}
+                            >
+                              <button className="py-1 px-4 bg-redGradient hover:bg-redGradientHover text-white font-semibold rounded-md shadow-sm hover:bg-themeColor2">
+                                <i className="fa-regular fa-trash-can pr-2"></i>{' '}
+                                Delete
+                              </button>
+                            </Popconfirm>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="6">
+                        <div className="flex flex-col items-center justify-center my-10">
+                          <i className="fa-solid fa-box-open text-gray-400 text-5xl"></i>
+                          <p className="text-gray-400 mt-4">No batch found</p>
                         </div>
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="4">
-                      <div className="flex flex-col items-center justify-center my-10">
-                        <i className="fa-solid fa-box-open text-gray-400 text-5xl"></i>
-                        <p className="text-gray-400 mt-4">No batch found</p>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
+        </div>
+        <div className="w-1/2">
+          <ProductionCalculator />
         </div>
       </div>
     </div>

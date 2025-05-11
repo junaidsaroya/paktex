@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const microbiologicalSchema = new mongoose.Schema(
   {
@@ -38,11 +38,11 @@ const microbiologicalSchema = new mongoose.Schema(
       default: Date.now,
     },
   },
-  { timestamps: true }
+  {timestamps: true}
 );
 
 const Microbiological = mongoose.model(
-  "Microbiological",
+  'Microbiological',
   microbiologicalSchema
 );
 

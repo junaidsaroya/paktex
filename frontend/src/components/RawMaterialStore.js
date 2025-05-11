@@ -1,6 +1,6 @@
-import { message, Popconfirm } from "antd";
-import React, { useEffect, useState } from "react";
-import apiClient from "../utils/interceptor";
+import {message, Popconfirm} from 'antd';
+import {useEffect, useState} from 'react';
+import apiClient from '../utils/interceptor';
 
 const RawMaterialStore = () => {
   const [rawMaterialList, setRawMaterialList] = useState([]);
@@ -9,13 +9,15 @@ const RawMaterialStore = () => {
   const fetchRawMaterialList = async () => {
     setLoading(true);
     try {
-      const response = await apiClient.get("/rawMaterialStore/rawMaterialStore");
+      const response = await apiClient.get('/store/store');
       const rawMaterialData = response.data || [];
 
-      const filteredData = rawMaterialData.filter((item) => !item.dispatch);
+      const filteredData = rawMaterialData.filter(
+        (item) => item.type === 'Raw'
+      );
       setRawMaterialList(filteredData);
     } catch (error) {
-      message.error("Failed to fetch products.");
+      message.error('Failed to fetch products.');
     } finally {
       setLoading(false);
     }
@@ -25,18 +27,16 @@ const RawMaterialStore = () => {
     fetchRawMaterialList();
   }, []);
 
-  const handleDispatch = async (id) => {
+  const handleDispense = async (id) => {
     try {
-      await apiClient.put(`/rawMaterialStore/rawMaterialStore/${id}`, {
-        dispatch: true,
-        dispatchBy: localStorage.getItem('userName'),
-        dispatchDate: new Date().toISOString().split("T")[0],
-      });
-      message.success("Product dispatched successfully.");
-
+      await apiClient.patch(`/store/process-request/${id}`);
+      message.success('Material request processed successfully!');
       fetchRawMaterialList();
     } catch (error) {
-      message.error("Failed to update dispatch status.");
+      console.error('Error processing request:', error);
+      message.error();
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -54,14 +54,15 @@ const RawMaterialStore = () => {
               <thead className="bg-gray-200 text-gray-600 font-semibold border border-gray-200">
                 <tr>
                   <th className="py-3 px-4">Product</th>
-                  <th className="py-3 px-4">Batch Number</th>
+                  <th className="py-3 px-4">Quantity</th>
+                  <th className="py-3 px-4">Request</th>
                   <th className="py-3 px-4">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan="3" className="text-center py-4">
+                    <td colSpan="4" className="text-center py-4">
                       Loading...
                     </td>
                   </tr>
@@ -72,24 +73,36 @@ const RawMaterialStore = () => {
                       className="hover:bg-gray-50 transition-colors text-center duration-200 border-t bg-white divide-y divide-gray-200 text-gray-600"
                     >
                       <td className="py-4 px-4">{rawMaterial.productName}</td>
-                      <td className="py-4 px-4">{rawMaterial.batchNo}</td>
+                      <td className="py-4 px-4">
+                        {rawMaterial.quantity} {rawMaterial.quantityUnit}
+                      </td>
+                      <td className="py-4 px-4">
+                        {rawMaterial.requestMaterial &&
+                        rawMaterial.requestMaterial !== '0'
+                          ? `${rawMaterial.requestMaterial} Meter`
+                          : ''}
+                      </td>
+
                       <td className="py-4 px-4">
                         <Popconfirm
-                          title="Are you sure you want to dispatch this product?"
+                          title="Are you sure you want to dispatch?"
                           okText="Yes"
                           cancelText="No"
-                          onConfirm={() => handleDispatch(rawMaterial._id)}
+                          onConfirm={() => handleDispense(rawMaterial._id)}
                         >
-                          <button className="py-1 px-4 bg-themeGradient hover:bg-themeGradientHover text-white font-semibold rounded-md shadow-sm">
-                          Dispatch<i className="fa-solid fa-truck pl-2"></i>
-                          </button>
+                          {rawMaterial.requestMaterial &&
+                          rawMaterial.requestMaterial !== '0' ? (
+                            <button className="py-1 px-4 bg-themeGradient hover:bg-themeGradientHover text-white font-semibold rounded-md shadow-sm">
+                              Dispatch
+                            </button>
+                          ) : null}
                         </Popconfirm>
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="3">
+                    <td colSpan="4">
                       <div className="flex flex-col items-center justify-center my-10">
                         <i className="fa-solid fa-box-open text-gray-400 text-5xl"></i>
                         <p className="text-gray-400 mt-4">No data found</p>

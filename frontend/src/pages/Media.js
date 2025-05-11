@@ -1,12 +1,11 @@
-import { Popconfirm, message } from "antd";
-import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import apiClient from "../utils/interceptor";
-
+import {Popconfirm, message} from 'antd';
+import {useEffect, useState} from 'react';
+import {Link} from 'react-router-dom';
+import apiClient from '../utils/interceptor';
 
 const Media = () => {
   const [medias, setMedias] = useState([]);
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -31,29 +30,29 @@ const Media = () => {
   };
 
   const handleRefresh = () => {
-    setStatus("");
+    setStatus('');
   };
 
   const handleDelete = async (id) => {
     try {
       await apiClient.delete(`/media/getAllMedia/${id}`);
-      message.success("Media deleted successfully!");
+      message.success('Media deleted successfully!');
       setMedias(medias.filter((media) => media._id !== id));
     } catch (error) {
-      console.error("Error deleting media:", error);
-      message.error("Failed to delete media.");
+      console.error('Error deleting media:', error);
+      message.error('Failed to delete media.');
     }
   };
 
   const filteredMedia = medias.filter((media) => {
-    const statusMatch = status === "" || media.status.toString() === status;
+    const statusMatch = status === '' || media.status.toString() === status;
     return statusMatch;
   });
 
   return (
-    <div className="px-4 py-2 rounded-xl bg-white h-full border border-2 border-gray-200">
+    <div className="px-4 py-2 rounded-xl bg-white h-full border-2 border-gray-200">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-        <div style={{ fontFamily: "Roboto, sans-serif" }}>
+        <div style={{fontFamily: 'Roboto, sans-serif'}}>
           <h1 className="font-bold text-lg md:text-xl text-start text-themeColor">
             Media
           </h1>
@@ -83,7 +82,7 @@ const Media = () => {
             id="status"
             value={status}
             onChange={handleStatusChange}
-            className="w-full rounded-md px-3 py-2 border border-gray-300 bg-gray-50 rounded-lg focus:outline-none focus:ring-themeColor focus:border-themeColor"
+            className="w-full rounded-md px-3 py-2 border border-gray-300 bg-gray-50 focus:outline-none focus:ring-themeColor focus:border-themeColor"
           >
             <option value="">All</option>
             <option value="true">Active</option>
@@ -121,12 +120,12 @@ const Media = () => {
                         <div className="flex items-center justify-center">
                           <div
                             className={`relative inline-block w-11 h-5 transition duration-200 ease-linear rounded-full cursor-default ${
-                              media.status ? "bg-themeColor" : "bg-gray-300"
+                              media.status ? 'bg-themeColor' : 'bg-gray-300'
                             }`}
                           >
                             <span
                               className={`absolute block w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-200 ease-in-out ${
-                                media.status ? "translate-x-6" : "translate-x-0"
+                                media.status ? 'translate-x-6' : 'translate-x-0'
                               }`}
                             ></span>
                           </div>
@@ -134,8 +133,6 @@ const Media = () => {
                       </td>
                       <td className="py-4 px-4 space-x-2">
                         <div className="flex gap-2 justify-center">
-                          {/* <i className="fa-regular fa-eye"></i>
-                          <i className="fa-regular fa-pen-to-square"></i> */}
                           <Popconfirm
                             title="Are you sure you want to delete this instrument?"
                             okText="Yes"

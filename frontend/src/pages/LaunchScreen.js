@@ -1,8 +1,8 @@
-import React, { useState } from "react";
-import SignIn from "../components/SignIn";
-import SignUp from "../components/SignUp";
+import {useState} from 'react';
+import SignIn from '../components/SignIn';
+import SignUp from '../components/SignUp';
 
-const LaunchScreen = ({ setLoged }) => {
+const LaunchScreen = ({setLoged}) => {
   const [showSignIn, setShowSignIn] = useState(true);
 
   const toggleForm = () => {
@@ -19,10 +19,10 @@ const LaunchScreen = ({ setLoged }) => {
       <div className="flex flex-col lg:flex-row items-center flex-1 px-6 lg:px-16 py-12 lg:py-16 space-y-8 lg:space-y-0 lg:space-x-10 z-10">
         <div className="w-full lg:w-1/2 lg:ms-20 bg-[#EDF1F1]">
           <img
-            src="/images/paktexlogin.avif"
+            src="/images/paktexlogin.jpeg"
             alt="login"
             style={{
-              mixBlendMode: "multiply",
+              mixBlendMode: 'multiply',
             }}
             className="w-full"
           />

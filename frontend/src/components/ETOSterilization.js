@@ -1,40 +1,40 @@
-import { message } from "antd";
-import React, { useEffect, useState } from "react";
-import apiClient from "../utils/interceptor";
+import {message} from 'antd';
+import {useEffect, useState} from 'react';
+import apiClient from '../utils/interceptor';
+import {jsPDF} from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const ETOSterilization = () => {
   const [etoSterlizationList, setETOSterlizationList] = useState([]);
   const [products, setProducts] = useState([]);
-  const [selectedProduct, setSelectedProduct] = useState("");
-  const [processingProduct, setProcessingProduct] = useState("");
-  const [loading, setLoading] = useState("");
+  const [selectedProduct, setSelectedProduct] = useState('');
+  const [processingProduct, setProcessingProduct] = useState('');
+  const [loading, setLoading] = useState('');
   const [manufactureDate, setManufactureDate] = useState(
-    new Date().toISOString().split("T")[0]
+    new Date().toISOString().split('T')[0]
   );
-  const [productName, setProductName] = useState("");
-  const [cycleNumber, setCycleNumber] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [startTime, setStartTime] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [endTime, setEndTime] = useState("");
-  const [cylinderLotNumber, setCylinderLotNumber] = useState("");
-  const [cylinderNumber, setCylinderNumber] = useState("");
-  const [initialWeight, setInitialWeight] = useState("");
-  const [finalWeight, setFinalWeight] = useState("");
-  const [gasConsume, setGasConsume] = useState("");
+  const [productName, setProductName] = useState('');
+  const [cycleNumber, setCycleNumber] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [startTime, setStartTime] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [endTime, setEndTime] = useState('');
+  const [cylinderLotNumber, setCylinderLotNumber] = useState('');
+  const [cylinderNumber, setCylinderNumber] = useState('');
+  const [initialWeight, setInitialWeight] = useState('');
+  const [finalWeight, setFinalWeight] = useState('');
+  const [gasConsume, setGasConsume] = useState('');
+  const [etoExposureDuration, setEtoExposureDuration] = useState('');
+  const [sterlizationTemperature, setSterlizationTemperature] = useState('');
+  const [gasExposureTemperature, setGasExposureTemperature] = useState('');
   useEffect(() => {
     if (initialWeight && finalWeight) {
       const consumed = parseFloat(initialWeight) - parseFloat(finalWeight);
       setGasConsume(consumed.toFixed(2));
     } else {
-      setGasConsume("");
+      setGasConsume('');
     }
   }, [initialWeight, finalWeight]);
-
-  const [etoExposureDuration, setEtoExposureDuration] = useState("");
-  const [sterlizationTemperature, setSterlizationTemperature] = useState("");
-  const [gasExposureTemperature, setGasExposureTemperature] = useState("");
-
   const handleCancel = () => {
     setSelectedProduct(null);
     setProcessingProduct(null);
@@ -42,18 +42,18 @@ const ETOSterilization = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response1 = await apiClient.get("/batch/getAllBatch");
+        const response1 = await apiClient.get('/batch/getAllBatch');
         const activeBatch = response1.data.filter(
           (batch) => batch.status === true
         );
 
         const products = activeBatch;
 
-        const response2 = await apiClient.get("/finishProduct/finishProduct");
+        const response2 = await apiClient.get('/finishProduct/finishProduct');
         const productName =
           response2.data.data.length > 0
             ? response2.data.data[0].productName
-            : "";
+            : '';
 
         const matchedProduct = products.find(
           (product) =>
@@ -62,13 +62,12 @@ const ETOSterilization = () => {
 
         setProducts(matchedProduct ? [matchedProduct] : []);
       } catch (error) {
-        message.error("Failed to fetch products.");
+        message.error('Failed to fetch products.');
       }
     };
 
     fetchProducts();
   }, []);
-
   const handleProductSelection = (event) => {
     const selectedValue = event.target.value;
     const selectedProductObj = products.find(
@@ -76,17 +75,16 @@ const ETOSterilization = () => {
     );
     setSelectedProduct(selectedProductObj);
   };
-
   const handleSearch = async () => {
     if (!selectedProduct) {
-      message.error("Please select product.");
+      message.error('Please select product.');
       return;
     }
     setLoading(true);
 
     try {
       const response = await apiClient.get(
-        "/intimateProduct/getAllIntimateProducts"
+        '/intimateProduct/getAllIntimateProducts'
       );
       const products = response.data.data || [];
 
@@ -96,7 +94,7 @@ const ETOSterilization = () => {
       setProductName(selectedProductData.productName);
       setProcessingProduct(selectedProductData || []);
     } catch (error) {
-      message.error("Failed to fetch products.");
+      message.error('Failed to fetch products.');
     } finally {
       setLoading(false);
     }
@@ -104,22 +102,21 @@ const ETOSterilization = () => {
   const fetchETOSterlizationList = async () => {
     setLoading(true);
     try {
-      const response = await apiClient.get("/etoSterlization/etoSterlization");
+      const response = await apiClient.get('/etoSterlization/etoSterlization');
       const etoSterlizationData = response.data.data || [];
 
       setETOSterlizationList(etoSterlizationData);
 
       generateCycleNumber(etoSterlizationData);
     } catch (error) {
-      message.error("Failed to fetch products.");
+      message.error('Failed to fetch products.');
     } finally {
       setLoading(false);
     }
   };
-
   const generateCycleNumber = (etoSterlizationList) => {
     const currentYear = new Date().getFullYear().toString().slice(-2);
-    const monthLetters = "ABCDEFGHIJKL";
+    const monthLetters = 'ABCDEFGHIJKL';
     const currentMonth = monthLetters[new Date().getMonth()];
 
     let newCycleNumber = `${currentYear}${currentMonth}0001`;
@@ -130,12 +127,11 @@ const ETOSterilization = () => {
       const lastNumber = parseInt(lastCycleNumber.slice(-4), 10) + 1;
       newCycleNumber = `${currentYear}${currentMonth}${String(
         lastNumber
-      ).padStart(4, "0")}`;
+      ).padStart(4, '0')}`;
     }
 
     setCycleNumber(newCycleNumber);
   };
-
   useEffect(() => {
     fetchETOSterlizationList();
   }, []);
@@ -161,39 +157,126 @@ const ETOSterilization = () => {
     };
 
     try {
-      await apiClient.post("/etoSterlization/etoSterlization", payload);
-      setManufactureDate("");
+      await apiClient.post('/etoSterlization/etoSterlization', payload);
+      setManufactureDate('');
       setCycleNumber();
-      setProductName("");
-      setSelectedProduct("");
-      setProcessingProduct("");
-      setCycleNumber("");
-      setStartDate("");
-      setStartTime("");
-      setEndDate("");
-      setEndTime("");
-      setCylinderLotNumber("");
-      setCylinderNumber("");
-      setInitialWeight("");
-      setFinalWeight("");
-      setGasConsume("");
-      setEtoExposureDuration("");
-      setSterlizationTemperature("");
-      setGasExposureTemperature("");
-      message.success("Test Saved successfully.");
+      setProductName('');
+      setSelectedProduct('');
+      setProcessingProduct('');
+      setCycleNumber('');
+      setStartDate('');
+      setStartTime('');
+      setEndDate('');
+      setEndTime('');
+      setCylinderLotNumber('');
+      setCylinderNumber('');
+      setInitialWeight('');
+      setFinalWeight('');
+      setGasConsume('');
+      setEtoExposureDuration('');
+      setSterlizationTemperature('');
+      setGasExposureTemperature('');
+      message.success('Test Saved successfully.');
+      sendToQuarantineStore();
       fetchETOSterlizationList();
     } catch (error) {
-      message.error("Failed to save test.");
+      message.error('Failed to save test.');
     }
   };
+  const sendToQuarantineStore = async () => {
+    const payload = {
+      productName,
+      batchNo: selectedProduct?.batchNumber,
+    };
 
+    try {
+      await apiClient.post('/etoQuarantineStore/etoQuarantineStore', payload);
+      message.success('Send to ETO Quarantine Store successfully.');
+      deleteFromSterileStore(processingProduct);
+    } catch (error) {
+      message.error('Failed to send to store.');
+    }
+  };
+  const deleteFromSterileStore = async () => {
+    try {
+      await apiClient.delete(
+        `/etoSterileStore/etoSterileStore/${encodeURIComponent(
+          processingProduct.productName
+        )}`
+      );
+    } catch (error) {
+      console.error('Error deleting batch:', error);
+      message.error('Failed to delete batch.');
+    }
+  };
+  const handleViewReport = () => {
+    const doc = new jsPDF();
+
+    doc.setFontSize(18);
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const text = 'ETO Sterlization Report';
+    const textWidth =
+      (doc.getStringUnitWidth(text) * doc.internal.getFontSize()) /
+      doc.internal.scaleFactor;
+    doc.text(text, (pageWidth - textWidth) / 2, 20);
+
+    doc.setFontSize(12);
+    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 15, 30);
+
+    const headers = [['Product', 'Batch Number', 'Cycle Number']];
+    const data = etoSterlizationList.map((eto) => [
+      eto.productName || 'N/A',
+      eto.batchNumber || 'N/A',
+      eto.cycleNumber || 'N/A',
+    ]);
+
+    autoTable(doc, {
+      head: headers,
+      body: data,
+      startY: 35,
+      styles: {
+        fontSize: 10,
+        cellPadding: 3,
+        halign: 'center',
+      },
+      headStyles: {
+        fillColor: [65, 184, 72],
+        textColor: 255,
+        fontStyle: 'bold',
+      },
+      columnStyles: {
+        0: {halign: 'left'},
+        1: {halign: 'center'},
+        2: {halign: 'center'},
+      },
+      alternateRowStyles: {
+        fillColor: [245, 245, 245],
+      },
+    });
+
+    const pdfBlob = doc.output('blob');
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+
+    const newWindow = window.open();
+    if (newWindow) {
+      newWindow.location.href = pdfUrl;
+    } else {
+      const link = document.createElement('a');
+      link.href = pdfUrl;
+      link.target = '_blank';
+      link.download = 'ETOSterlization_report.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
   return (
     <div className="text-start">
       <div className="mb-4 flex justify-between">
         <div className="flex gap-2">
           <select
             required
-            value={selectedProduct ? selectedProduct.productName : ""}
+            value={selectedProduct ? selectedProduct.productName : ''}
             onChange={handleProductSelection}
             className="block w-52 px-3 py-2 border border-gray-300 bg-gray-50 rounded-md shadow-sm focus:outline-none focus:ring-themeColor focus:border-themeColor"
           >
@@ -219,15 +302,20 @@ const ETOSterilization = () => {
           )}
         </div>
         <div className="flex gap-2">
-          <div className="text-center">
-            <button
-              type="submit"
-              onClick={handleSearch}
-              className="py-2 px-6 w-40 bg-themeGradient hover:bg-themeGradientHover text-white font-semibold rounded-md shadow-sm hover:bg-themeColor2"
-            >
-              Search
-            </button>
-          </div>
+          <button
+            onClick={handleViewReport}
+            className="text-black border border-[#DCE3E3] px-3 py-1 rounded-md flex items-center gap-2"
+          >
+            <i className="fa-solid fa-eye text-lg"></i>
+            <span>View Report</span>
+          </button>
+          <button
+            type="submit"
+            onClick={handleSearch}
+            className="py-2 px-6 w-40 bg-themeGradient hover:bg-themeGradientHover text-white font-semibold rounded-md shadow-sm hover:bg-themeColor2"
+          >
+            Search
+          </button>
         </div>
       </div>
 
@@ -239,13 +327,13 @@ const ETOSterilization = () => {
                 <div className="pb-2">
                   <span className="font-semibold text-gray-800">
                     Product Name:
-                  </span>{" "}
+                  </span>{' '}
                   {processingProduct.productName}
                 </div>
                 <div className="pb-2">
                   <span className="font-semibold text-gray-800">
                     Manufacture Date:
-                  </span>{" "}
+                  </span>{' '}
                   <input
                     type="date"
                     required
@@ -257,34 +345,34 @@ const ETOSterilization = () => {
                 <div className="pb-2">
                   <span className="font-semibold text-gray-800">
                     Supplier Name:
-                  </span>{" "}
+                  </span>{' '}
                   {processingProduct.supplierName}
                 </div>
                 <div className="pb-2">
                   <span className="font-semibold text-gray-800">
                     Cycle Number:
-                  </span>{" "}
+                  </span>{' '}
                   {cycleNumber}
                 </div>
               </div>
 
               <div>
                 <div className="pb-2">
-                  <span className="font-semibold text-gray-800">Gr No:</span>{" "}
+                  <span className="font-semibold text-gray-800">Gr No:</span>{' '}
                   {processingProduct.grNumber}
                 </div>
                 <div className="pb-2">
                   <span className="font-semibold text-gray-800">
                     Receive Date:
-                  </span>{" "}
+                  </span>{' '}
                   {
                     new Date(processingProduct.receiveDate)
                       .toISOString()
-                      .split("T")[0]
+                      .split('T')[0]
                   }
                 </div>
                 <div className="pb-2">
-                  <span className="font-semibold text-gray-800">Lot No:</span>{" "}
+                  <span className="font-semibold text-gray-800">Lot No:</span>{' '}
                   {processingProduct.lotNumber}
                 </div>
               </div>

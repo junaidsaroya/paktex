@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import { Popover } from "antd";
-import LoggedInUserPopup from "./LoggedInUserPopup";
+import {useState} from 'react';
+import {Popover} from 'antd';
+import LoggedInUserPopup from './LoggedInUserPopup';
 
 const LoggedInUser = () => {
   const [popoverVisible, setPopoverVisible] = useState(false);
@@ -21,13 +21,14 @@ const LoggedInUser = () => {
         <div className="border-2 border-[#E9EAEB] rounded-xl w-full bg-white p-2 flex justify-between shadow-sm font-customFont">
           <div className="flex items-center">
             <div className="w-10 h-10 bg-[#F5F5F5] border border-[#E9EAEB] flex items-center justify-center rounded-full">
-              <span className="font-semibold text-xl text-[#535862] font-bold">
-                {localStorage.getItem("userName")?.charAt(0).toUpperCase() || "U"}
+              <span className="font-semibold text-xl text-[#535862]">
+                {localStorage.getItem('userName')?.charAt(0).toUpperCase() ||
+                  'U'}
               </span>
             </div>
             <div className="ml-3">
               <p className="font-semibold text-black">
-                {localStorage.getItem("userName") || "User Name"}
+                {localStorage.getItem('userName') || 'User Name'}
               </p>
             </div>
           </div>

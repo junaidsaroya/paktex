@@ -1,37 +1,37 @@
-import React, { useEffect, useState } from "react";
-import apiClient from "../utils/interceptor";
-import { message, Popconfirm } from "antd";
-import { setIntimateProducts } from "../slices/app";
-import { useSelector, useDispatch } from "react-redux";
+import {useEffect, useState} from 'react';
+import apiClient from '../utils/interceptor';
+import {message, Popconfirm} from 'antd';
+import {setIntimateProducts} from '../slices/app';
+import {useSelector, useDispatch} from 'react-redux';
 const Lims = () => {
   const [tests, setTests] = useState([
     {
-      testName: "",
-      specifications: "",
-      result: "",
-      status: "",
+      testName: '',
+      specifications: '',
+      result: '',
+      status: '',
     },
   ]);
-  const [qcNumber, setQcNumber] = useState("");
-  const [remarks, setRemarks] = useState("");
+  const [qcNumber, setQcNumber] = useState('');
+  const [remarks, setRemarks] = useState('');
   const dispatch = useDispatch();
-  const { intimateProducts } = useSelector((state) => state.app);
+  const {intimateProducts} = useSelector((state) => state.app);
   const [loading, setLoading] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [productType, setProductType] = useState("");
-  const [statusChangeId, setStatusChangeId] = useState("");
+  const [productType, setProductType] = useState('');
+  const [statusChangeId, setStatusChangeId] = useState('');
   const [releaseDate, setReleaseDate] = useState(
-    new Date().toISOString().split("T")[0]
+    new Date().toISOString().split('T')[0]
   );
   const fetchIntimateProducts = async () => {
     setLoading(true);
     try {
       const response = await apiClient.get(
-        "/intimateProduct/getAllIntimateProducts"
+        '/intimateProduct/getAllIntimateProducts'
       );
       dispatch(setIntimateProducts(response.data.data || []));
     } catch (error) {
-      message.error("Failed to fetch intimate products.");
+      message.error('Failed to fetch intimate products.');
     } finally {
       setLoading(false);
     }
@@ -41,34 +41,31 @@ const Lims = () => {
   }, []);
   const getProductType = async (selectedProduct) => {
     setLoading(true);
-  
+
     try {
-      const response = await apiClient.get("/intimateProduct/getAllIntimateProducts");
+      const response = await apiClient.get(
+        '/intimateProduct/getAllIntimateProducts'
+      );
       const products = response.data.data || [];
-  
-      // Find the product that matches the selectedProduct's name
+
       const selectedProductData = products.find(
         (product) => product.productName === selectedProduct.productName
       );
-      console.log("selectedProductData:", selectedProductData);
       if (selectedProductData) {
-        setProductType(selectedProductData.type); // Save the product type in state
-        console.log("ProductType:", productType);
+        setProductType(selectedProductData.type);
       } else {
-        message.warning("No matching product found.");
-        setProductType(""); // Reset state if no match is found
+        message.warning('No matching product found.');
+        setProductType('');
       }
     } catch (error) {
-      // message.error("Failed to fetch products.");
     } finally {
       setLoading(false);
     }
   };
-  
+
   const handleStartTest = (product) => {
     setSelectedProduct(product);
     getProductType(product);
-    
   };
   useEffect(() => {
     if (productType) {
@@ -81,23 +78,38 @@ const Lims = () => {
   };
   const handleCollect = async (id) => {
     try {
-      const status = "In Progress";
-      await apiClient.put(`/intimateProduct/statusUpdate/${id}`, { status });
+      const status = 'In Progress';
+      await apiClient.put(`/intimateProduct/statusUpdate/${id}`, {status});
       fetchIntimateProducts();
-      message.success("Collected successfully.");
+      message.success('Collected successfully.');
     } catch (error) {
-      console.error("Error saving test:", error);
-      message.error("Failed to collect.");
+      console.error('Error saving test:', error);
+      message.error('Failed to collect.');
     }
   };
   const handleComplete = async (id) => {
     try {
-      const status = "Complete";
-      await apiClient.put(`/intimateProduct/statusUpdate/${id}`, { status });
+      const status = 'Complete';
+      await apiClient.put(`/intimateProduct/statusUpdate/${id}`, {status});
       fetchIntimateProducts();
     } catch (error) {
-      console.error("Error saving test:", error);
-      message.error("Failed to complete.");
+      console.error('Error saving test:', error);
+      message.error('Failed to complete.');
+    }
+  };
+  const sendToStore = async () => {
+    const payload = {
+      productName: selectedProduct.productName,
+      type: selectedProduct.type,
+      quantity: selectedProduct.quantity,
+      quantityUnit: selectedProduct.measurementType,
+    };
+    try {
+      await apiClient.post('/store/store', payload);
+
+      message.success('Added to store successfully.');
+    } catch (error) {
+      message.error('Failed to send in store.');
     }
   };
   const handleSubmit = async () => {
@@ -109,34 +121,37 @@ const Lims = () => {
         testName: test.testName,
         specifications: test.specifications,
         result: test.result,
-        status: test.status || "",
+        status: test.status || '',
       })),
     };
     try {
-      await apiClient.post("/lims/lims", payload);
-      setReleaseDate("");
-      setQcNumber("");
+      await apiClient.post('/lims/lims', payload);
+      setReleaseDate('');
+      setQcNumber('');
       setTests([]);
-      setRemarks("");
+      setRemarks('');
       setSelectedProduct(null);
       await handleComplete(statusChangeId);
-      message.success("Test completed successfully.");
+      if (remarks === 'Pass') {
+        await sendToStore();
+      }
+      message.success('Test completed.');
     } catch (error) {
-      message.error("Failed to save test.");
+      message.error('Failed to save test.');
     }
   };
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        const response = await apiClient.get("/product/getAllProducts");
+        const response = await apiClient.get('/product/getAllProducts');
         const products = response.data.data || [];
         const selectedProductData = products.find(
           (product) => product.productName === selectedProduct.productName
         );
         setTests(selectedProductData?.tests || []);
       } catch (error) {
-        message.error("Failed to fetch products.");
+        message.error('Failed to fetch products.');
       } finally {
         setLoading(false);
       }
@@ -150,62 +165,64 @@ const Lims = () => {
       const newTests = [...prevTests];
       const selectedTest = newTests[index];
 
-      const acceptanceCriteria = selectedTest?.acceptanceCriteria || "";
-      const result = String(value || "").trim();
+      const acceptanceCriteria = selectedTest?.acceptanceCriteria || '';
+      const result = String(value || '').trim();
 
       newTests[index].result = result;
 
-      newTests[index].status = acceptanceCriteria === result ? "Pass" : "Fail";
+      newTests[index].status = acceptanceCriteria === result ? 'Pass' : 'Fail';
 
-      const hasFail = newTests.some((test) => test.status === "Fail");
-      setRemarks(hasFail ? "Fail" : "Pass");
+      const hasFail = newTests.some((test) => test.status === 'Fail');
+      setRemarks(hasFail ? 'Fail' : 'Pass');
 
       return newTests;
     });
   };
   const generateQCNumber = (productType) => {
-    const currentYear = new Date().getFullYear().toString().slice(-2); // Get last 2 digits of the year
-    const currentMonth = String(new Date().getMonth() + 1).padStart(2, "0"); // Get zero-padded month
-  
-    // Determine prefix based on productType
-    let prefix = "";
-    if (productType === "Packing") {
-      prefix = "PM";
-    } else if (productType === "Chemical") {
-      prefix = "CM";
-    } else if (productType === "Raw") {
-      prefix = "RM";
+    const currentYear = new Date().getFullYear().toString().slice(-2);
+    const currentMonth = String(new Date().getMonth() + 1).padStart(2, '0');
+
+    let prefix = '';
+    if (productType === 'Packing') {
+      prefix = 'PM';
+    } else if (productType === 'Chemical') {
+      prefix = 'CM';
+    } else if (productType === 'Raw') {
+      prefix = 'RM';
     } else {
-      message.error("Invalid product type.");
+      message.error('Invalid product type.');
       return;
     }
-  
+
     let newQcNumber = `${prefix}${currentYear}${currentMonth}0001`;
-  
-    // Filter products with status "Completed" and matching productType
+
     const completedProducts = intimateProducts.filter(
-      (product) => product.status === "Complete" 
+      (product) => product.status === 'Complete'
     );
     if (completedProducts.length > 0) {
-      const lastQcNumber = completedProducts[completedProducts.length - 1]?.qcNumber;
-  
-      if (lastQcNumber && lastQcNumber.startsWith(`${prefix}${currentYear}${currentMonth}`)) {
+      const lastQcNumber =
+        completedProducts[completedProducts.length - 1]?.qcNumber;
+
+      if (
+        lastQcNumber &&
+        lastQcNumber.startsWith(`${prefix}${currentYear}${currentMonth}`)
+      ) {
         const lastNumber = parseInt(lastQcNumber.slice(-4), 10) + 1;
-        newQcNumber = `${prefix}${currentYear}${currentMonth}${String(lastNumber).padStart(4, "0")}`;
+        newQcNumber = `${prefix}${currentYear}${currentMonth}${String(
+          lastNumber
+        ).padStart(4, '0')}`;
       } else {
-        // If no QC number exists for the current month, start from 0001
         newQcNumber = `${prefix}${currentYear}${currentMonth}0001`;
       }
     }
-  
+
     setQcNumber(newQcNumber);
   };
-  
 
   return (
-    <div className="px-4 py-2 rounded-xl bg-white min-h-screen border border-2 border-gray-200 text-start">
+    <div className="px-4 py-2 rounded-xl bg-white min-h-screen border-2 border-gray-200 text-start">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-2">
-        <div style={{ fontFamily: "Roboto, sans-serif" }}>
+        <div style={{fontFamily: 'Roboto, sans-serif'}}>
           <h1 className="font-bold text-lg md:text-lg text-themeColor">
             Bulk Raw Material Analysis
           </h1>
@@ -246,23 +263,23 @@ const Lims = () => {
                       </td>
                     </tr>
                   ) : intimateProducts.filter(
-                      (product) => product.status === "Pending"
+                      (product) => product.status === 'Pending'
                     ).length > 0 ? (
                     intimateProducts
-                      .filter((product) => product.status === "Pending")
+                      .filter((product) => product.status === 'Pending')
                       .map((product) => (
                         <tr
                           key={product._id}
                           className="hover:bg-gray-50 border-t transition-colors duration-200 bg-white divide-y divide-gray-200 text-gray-600 text-center"
                         >
                           <td className="py-4 px-4">
-                            {product.productName || "N/A"}
+                            {product.productName || 'N/A'}
                           </td>
                           <td className="py-4 px-4">
-                            {product.lotNumber || "N/A"}
+                            {product.lotNumber || 'N/A'}
                           </td>
                           <td className="py-4 px-4">
-                            {product.grNumber || "N/A"}
+                            {product.grNumber || 'N/A'}
                           </td>
                           <td className="py-4 px-4 whitespace-nowrap">
                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border border-red-800 bg-red-100 text-red-800">
@@ -298,23 +315,23 @@ const Lims = () => {
                       </td>
                     </tr>
                   ) : intimateProducts.filter(
-                      (product) => product.status === "In Progress"
+                      (product) => product.status === 'In Progress'
                     ).length > 0 ? (
                     intimateProducts
-                      .filter((product) => product.status === "In Progress")
+                      .filter((product) => product.status === 'In Progress')
                       .map((product) => (
                         <tr
                           key={product._id}
                           className="hover:bg-gray-50 border-t transition-colors duration-200 bg-white divide-y divide-gray-200 text-gray-600 text-center"
                         >
                           <td className="py-4 px-4">
-                            {product.productName || "N/A"}
+                            {product.productName || 'N/A'}
                           </td>
                           <td className="py-4 px-4">
-                            {product.lotNumber || "N/A"}
+                            {product.lotNumber || 'N/A'}
                           </td>
                           <td className="py-4 px-4">
-                            {product.grNumber || "N/A"}
+                            {product.grNumber || 'N/A'}
                           </td>
                           <td className="py-4 px-4 whitespace-nowrap">
                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border border-yellow-500 bg-yellow-100 text-yellow-500">
@@ -349,13 +366,13 @@ const Lims = () => {
                 <div className="pb-2">
                   <span className="font-semibold text-gray-800">
                     Product Name:
-                  </span>{" "}
+                  </span>{' '}
                   {selectedProduct.productName}
                 </div>
                 <div className="pb-2">
                   <span className="font-semibold text-gray-800">
                     Release Date:
-                  </span>{" "}
+                  </span>{' '}
                   <input
                     type="date"
                     required
@@ -367,28 +384,28 @@ const Lims = () => {
                 <div className="pb-2">
                   <span className="font-semibold text-gray-800">
                     Supplier Name:
-                  </span>{" "}
+                  </span>{' '}
                   {selectedProduct.supplierName}
                 </div>
                 <div className="pb-2">
-                  <span className="font-semibold text-gray-800">QC#</span>{" "}
+                  <span className="font-semibold text-gray-800">QC#</span>{' '}
                   {qcNumber}
                 </div>
               </div>
 
               <div>
                 <div className="pb-2">
-                  <span className="font-semibold text-gray-800">Gr No:</span>{" "}
+                  <span className="font-semibold text-gray-800">Gr No:</span>{' '}
                   {selectedProduct.grNumber}
                 </div>
                 <div className="pb-2">
                   <span className="font-semibold text-gray-800">
                     Receive Date:
-                  </span>{" "}
+                  </span>{' '}
                   {new Date(selectedProduct.receiveDate).toLocaleDateString()}
                 </div>
                 <div className="pb-2">
-                  <span className="font-semibold text-gray-800">Lot No:</span>{" "}
+                  <span className="font-semibold text-gray-800">Lot No:</span>{' '}
                   {selectedProduct.lotNumber}
                 </div>
               </div>
@@ -421,14 +438,14 @@ const Lims = () => {
                           <input
                             type="text"
                             readOnly
-                            value={test.testName || ""} // Bind input value to test.testName
+                            value={test.testName || ''}
                             onChange={(e) =>
                               setTests((prevTests) => {
                                 const newTests = [...prevTests];
                                 newTests[index] = {
                                   ...newTests[index],
                                   testName: e.target.value,
-                                }; // Update testName
+                                };
                                 return newTests;
                               })
                             }
@@ -439,14 +456,14 @@ const Lims = () => {
                           <input
                             type="text"
                             readOnly
-                            value={test.specifications || ""} // Bind input value to test.specifications
+                            value={test.specifications || ''}
                             onChange={(e) =>
                               setTests((prevTests) => {
                                 const newTests = [...prevTests];
                                 newTests[index] = {
                                   ...newTests[index],
                                   specifications: e.target.value,
-                                }; // Update specifications
+                                };
                                 return newTests;
                               })
                             }
@@ -456,23 +473,22 @@ const Lims = () => {
                         <td className="py-2 px-4 border-b">
                           <input
                             type="text"
-                            value={tests[index]?.result} // Set the value from the state
+                            value={tests[index]?.result}
                             onChange={(e) =>
                               updateTestField(index, e.target.value)
                             }
                             onBlur={(e) =>
                               updateTestField(index, e.target.value)
-                            } // Trigger on focus out
+                            }
                             onKeyDown={(e) => {
-                              if (e.key === "Enter") {
-                                updateTestField(index, e.target.value); // Trigger on Enter press
+                              if (e.key === 'Enter') {
+                                updateTestField(index, e.target.value);
                               }
                             }}
                             className="border p-2 rounded-md"
                           />
                         </td>
                         <td className="px-4 py-2 border-b text-gray-800">
-                          {/* Compare acceptanceCriteria with the result, ensuring both are strings and trimmed */}
                           {test.status}
                         </td>
                       </tr>
@@ -502,10 +518,9 @@ const Lims = () => {
               title="Do you want to print Label?"
               okText="Yes"
               cancelText="No"
-              onCancel={handleSubmit} // Runs only handleSubmit when "No" is clicked
+              onCancel={handleSubmit}
               onConfirm={() => {
-                handleSubmit(); // Runs handleSubmit
-                // handlePrint();  // Runs handlePrint if "Yes" is clicked
+                handleSubmit();
               }}
             >
               <button

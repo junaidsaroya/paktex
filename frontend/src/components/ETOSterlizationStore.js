@@ -1,6 +1,6 @@
-import { message, Popconfirm } from "antd";
-import React, { useEffect, useState } from "react";
-import apiClient from "../utils/interceptor";
+import {message} from 'antd';
+import {useEffect, useState} from 'react';
+import apiClient from '../utils/interceptor';
 
 const ETOSterlizationStore = () => {
   const [etoSterlizationList, setETOSterlizationList] = useState([]);
@@ -8,16 +8,11 @@ const ETOSterlizationStore = () => {
   const fetchETOSterlizationList = async () => {
     setLoading(true);
     try {
-      const response = await apiClient.get(
-        "/etoSterlizationStore/etoSterlizationStore"
-      );
+      const response = await apiClient.get('/etoSterileStore/etoSterileStore');
       const etoSterlizationData = response.data || [];
-      const filteredData = etoSterlizationData.filter(
-        (item) => !item.dispatch
-      );
-      setETOSterlizationList(filteredData);
+      setETOSterlizationList(etoSterlizationData);
     } catch (error) {
-      message.error("Failed to fetch products.");
+      message.error('Failed to fetch products.');
     } finally {
       setLoading(false);
     }
@@ -25,21 +20,7 @@ const ETOSterlizationStore = () => {
   useEffect(() => {
     fetchETOSterlizationList();
   }, []);
-  const handleDispatch = async (id) => {
-    try {
-      await apiClient.patch(
-        `/etoSterlizationStore/etoSterlizationStore/${id}`,
-        {
-          dispatch: true,
-        }
-      );
-      message.success("Product dispatched successfully.");
 
-      fetchETOSterlizationList();
-    } catch (error) {
-      message.error("Failed to update dispatch status.");
-    }
-  };
   return (
     <div className="text-start">
       <div className="flex justify-end my-2">
@@ -55,7 +36,6 @@ const ETOSterlizationStore = () => {
                 <tr>
                   <th className="py-3 px-4">Product</th>
                   <th className="py-3 px-4">Batch Number</th>
-                  <th className="py-3 px-4">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -66,7 +46,7 @@ const ETOSterlizationStore = () => {
                     </td>
                   </tr>
                 ) : etoSterlizationList.length > 0 ? (
-                    etoSterlizationList.map((etoSterlization) => (
+                  etoSterlizationList.map((etoSterlization) => (
                     <tr
                       key={etoSterlization._id}
                       className="hover:bg-gray-50 transition-colors text-center duration-200 border-t bg-white divide-y divide-gray-200 text-gray-600"
@@ -75,18 +55,6 @@ const ETOSterlizationStore = () => {
                         {etoSterlization.productName}
                       </td>
                       <td className="py-4 px-4">{etoSterlization.batchNo}</td>
-                      <td className="py-4 px-4">
-                        <Popconfirm
-                          title="Are you sure you want to dispatch this product?"
-                          okText="Yes"
-                          cancelText="No"
-                          onConfirm={() => handleDispatch(etoSterlization._id)}
-                        >
-                          <button className="py-1 px-4 bg-themeGradient hover:bg-themeGradientHover text-white font-semibold rounded-md shadow-sm">
-                            Dispatch<i className="fa-solid fa-truck pl-2"></i>
-                          </button>
-                        </Popconfirm>
-                      </td>
                     </tr>
                   ))
                 ) : (

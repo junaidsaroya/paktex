@@ -1,26 +1,27 @@
-import { message } from "antd";
-import React, { useEffect, useState } from "react";
-import apiClient from "../utils/interceptor";
-
+import {message} from 'antd';
+import {useEffect, useState} from 'react';
+import apiClient from '../utils/interceptor';
+import {jsPDF} from 'jspdf';
+import autoTable from 'jspdf-autotable';
 const BatchRawMaterial = () => {
   const [batchMaterialList, setBatchMaterialList] = useState([]);
   const [products, setProducts] = useState([]);
-  const [selectedProduct, setSelectedProduct] = useState("");
-  const [productName, setProductName] = useState("");
+  const [selectedProduct, setSelectedProduct] = useState('');
+  const [productName, setProductName] = useState('');
   const [loading, setLoading] = useState(false);
-  const [testProduct, setTestProduct] = useState("");
-  const [qcNumber, setQcNumber] = useState("");
-  const [description, setDescription] = useState("");
-  const [remarks, setRemarks] = useState("");
+  const [testProduct, setTestProduct] = useState('');
+  const [qcNumber, setQcNumber] = useState('');
+  const [description, setDescription] = useState('');
+  const [remarks, setRemarks] = useState('');
   const [manufactureDate, setManufactureDate] = useState(
-    new Date().toISOString().split("T")[0]
+    new Date().toISOString().split('T')[0]
   );
   const [tests, setTests] = useState([
     {
-      testName: "",
-      specifications: "",
-      result: "",
-      status: "",
+      testName: '',
+      specifications: '',
+      result: '',
+      status: '',
     },
   ]);
   const updateTestField = (index, value) => {
@@ -28,13 +29,13 @@ const BatchRawMaterial = () => {
       const newTests = [...prevTests];
       const selectedTest = newTests[index];
 
-      const acceptanceCriteria = selectedTest?.acceptanceCriteria || "";
-      const result = String(value || "").trim();
+      const acceptanceCriteria = selectedTest?.acceptanceCriteria || '';
+      const result = String(value || '').trim();
 
       newTests[index].result = result;
-      newTests[index].status = acceptanceCriteria === result ? "Pass" : "Fail";
-      const hasFail = newTests.some((test) => test.status === "Fail");
-      setRemarks(hasFail ? "Fail" : "Pass");
+      newTests[index].status = acceptanceCriteria === result ? 'Pass' : 'Fail';
+      const hasFail = newTests.some((test) => test.status === 'Fail');
+      setRemarks(hasFail ? 'Fail' : 'Pass');
 
       return newTests;
     });
@@ -46,13 +47,13 @@ const BatchRawMaterial = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await apiClient.get("/batch/getAllBatch");
+        const response = await apiClient.get('/batch/getAllBatch');
         const activeProducts = response.data.filter(
           (product) => product.status === true
         );
         setProducts(activeProducts);
       } catch (error) {
-        message.error("Failed to fetch products.");
+        message.error('Failed to fetch products.');
       }
     };
     fetchProducts();
@@ -68,28 +69,28 @@ const BatchRawMaterial = () => {
 
   const handleSearch = async () => {
     if (!selectedProduct) {
-      message.error("Please select product.");
+      message.error('Please select product.');
       return;
     }
     setLoading(true);
 
     try {
-      const response = await apiClient.get("/product/getAllProducts");
+      const response = await apiClient.get('/product/getAllProducts');
       const products = response.data.data || [];
 
       const selectedProductData = products.find(
         (product) => product.productName === selectedProduct.productName
       );
-      setTests(selectedProductData?.tests || []); // Initialize tests state
+      setTests(selectedProductData?.tests || []);
     } catch (error) {
-      message.error("Failed to fetch products.");
+      message.error('Failed to fetch products.');
     } finally {
       setLoading(false);
     }
 
     try {
       const response = await apiClient.get(
-        "/intimateProduct/getAllIntimateProducts"
+        '/intimateProduct/getAllIntimateProducts'
       );
       const products = response.data.data || [];
 
@@ -97,9 +98,9 @@ const BatchRawMaterial = () => {
         (product) => product.productName === selectedProduct.productName
       );
       setProductName(selectedProductData.productName);
-      setTestProduct(selectedProductData || []); // Initialize tests state
+      setTestProduct(selectedProductData || []);
     } catch (error) {
-      message.error("Failed to fetch products.");
+      message.error('Failed to fetch products.');
     } finally {
       setLoading(false);
     }
@@ -108,7 +109,7 @@ const BatchRawMaterial = () => {
     setLoading(true);
     try {
       const response = await apiClient.get(
-        "/batchRawMaterial/batchRawMaterial"
+        '/batchRawMaterial/batchRawMaterial'
       );
       const batchData = response.data.data || [];
 
@@ -116,7 +117,7 @@ const BatchRawMaterial = () => {
 
       generateQCNumber(batchData);
     } catch (error) {
-      message.error("Failed to fetch products.");
+      message.error('Failed to fetch products.');
     } finally {
       setLoading(false);
     }
@@ -124,7 +125,7 @@ const BatchRawMaterial = () => {
 
   const generateQCNumber = (batchList) => {
     const currentYear = new Date().getFullYear().toString().slice(-2);
-    const currentMonth = String(new Date().getMonth() + 1).padStart(2, "0");
+    const currentMonth = String(new Date().getMonth() + 1).padStart(2, '0');
 
     let newQcNumber = `BRM${currentYear}${currentMonth}0001`;
 
@@ -133,7 +134,7 @@ const BatchRawMaterial = () => {
       const lastNumber = parseInt(lastQcNumber.slice(-4), 10) + 1;
       newQcNumber = `BRM${currentYear}${currentMonth}${String(
         lastNumber
-      ).padStart(4, "0")}`;
+      ).padStart(4, '0')}`;
     }
 
     setQcNumber(newQcNumber);
@@ -154,37 +155,103 @@ const BatchRawMaterial = () => {
         testName: test.testName,
         specifications: test.specifications,
         result: test.result,
-        status: test.status || "",
+        status: test.status || '',
       })),
-      qcAnalyst: localStorage.getItem("userName"),
+      qcAnalyst: localStorage.getItem('userName'),
       batchNumber: selectedProduct?.batchNumber,
     };
 
     try {
-      await apiClient.post("/batchRawMaterial/batchRawMaterial", payload);
-      setManufactureDate("");
-      setQcNumber("");
+      await apiClient.post('/batchRawMaterial/batchRawMaterial', payload);
+      setManufactureDate('');
+      setQcNumber('');
       setTests([]);
-      setTestProduct("");
-      setDescription("");
-      setRemarks("");
-      setProductName("");
-      setSelectedProduct("");
-      message.success("Test Saved successfully.");
+      setTestProduct('');
+      setDescription('');
+      setRemarks('');
+      setProductName('');
+      setSelectedProduct('');
+      message.success('Test Saved successfully.');
 
       fetchBatchRawMaterialList();
     } catch (error) {
-      message.error("Failed to save test.");
+      message.error('Failed to save test.');
     }
   };
+  const handleViewReport = () => {
+    const doc = new jsPDF();
 
+    doc.setFontSize(18);
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const text = 'Batch Raw Material Report';
+    const textWidth =
+      (doc.getStringUnitWidth(text) * doc.internal.getFontSize()) /
+      doc.internal.scaleFactor;
+    doc.text(text, (pageWidth - textWidth) / 2, 20);
+
+    doc.setFontSize(12);
+    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 15, 30);
+
+    const headers = [
+      ['Product', 'Batch Number', 'QC Number', 'QC Analyst', 'Remarks'],
+    ];
+    const data = batchMaterialList.map((bml) => [
+      bml.productName || 'N/A',
+      bml.batchNumber || 'N/A',
+      bml.qcNumber || 'N/A',
+      bml.qcAnalyst || 'N/A',
+      bml.remarks || 'N/A',
+    ]);
+
+    autoTable(doc, {
+      head: headers,
+      body: data,
+      startY: 35,
+      styles: {
+        fontSize: 10,
+        cellPadding: 3,
+        halign: 'center',
+      },
+      headStyles: {
+        fillColor: [65, 184, 72],
+        textColor: 255,
+        fontStyle: 'bold',
+      },
+      columnStyles: {
+        0: {halign: 'left'},
+        1: {halign: 'center'},
+        2: {halign: 'center'},
+        3: {halign: 'center'},
+        3: {halign: 'center'},
+      },
+      alternateRowStyles: {
+        fillColor: [245, 245, 245],
+      },
+    });
+
+    const pdfBlob = doc.output('blob');
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+
+    const newWindow = window.open();
+    if (newWindow) {
+      newWindow.location.href = pdfUrl;
+    } else {
+      const link = document.createElement('a');
+      link.href = pdfUrl;
+      link.target = '_blank';
+      link.download = 'BatchRawMaterial_report.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
   return (
     <div className="text-start">
       <div className="mb-4 flex justify-between">
         <div className="flex gap-2">
           <select
             required
-            value={selectedProduct ? selectedProduct.productName : ""}
+            value={selectedProduct ? selectedProduct.productName : ''}
             onChange={handleProductSelection}
             className="block w-52 px-3 py-2 border border-gray-300 bg-gray-50 rounded-md shadow-sm focus:outline-none focus:ring-themeColor focus:border-themeColor"
           >
@@ -210,15 +277,20 @@ const BatchRawMaterial = () => {
           )}
         </div>
         <div className="flex gap-2">
-          <div className="text-center">
-            <button
-              type="submit"
-              onClick={handleSearch}
-              className="py-2 px-6 w-40 bg-themeGradient hover:bg-themeGradientHover text-white font-semibold rounded-md shadow-sm hover:bg-themeColor2"
-            >
-              Search
-            </button>
-          </div>
+          <button
+            onClick={handleViewReport}
+            className="text-black border border-[#DCE3E3] px-3 py-1 rounded-md flex items-center gap-2"
+          >
+            <i className="fa-solid fa-eye text-lg"></i>
+            <span>View Report</span>
+          </button>
+          <button
+            type="submit"
+            onClick={handleSearch}
+            className="py-2 px-6 w-40 bg-themeGradient hover:bg-themeGradientHover text-white font-semibold rounded-md shadow-sm hover:bg-themeColor2"
+          >
+            Search
+          </button>
         </div>
       </div>
 
@@ -230,13 +302,13 @@ const BatchRawMaterial = () => {
                 <div className="pb-2">
                   <span className="font-semibold text-gray-800">
                     Product Name:
-                  </span>{" "}
+                  </span>{' '}
                   {testProduct.productName}
                 </div>
                 <div className="pb-2">
                   <span className="font-semibold text-gray-800">
                     Manufacture Date:
-                  </span>{" "}
+                  </span>{' '}
                   <input
                     type="date"
                     required
@@ -248,32 +320,32 @@ const BatchRawMaterial = () => {
                 <div className="pb-2">
                   <span className="font-semibold text-gray-800">
                     Supplier Name:
-                  </span>{" "}
+                  </span>{' '}
                   {testProduct.supplierName}
                 </div>
                 <div className="pb-2">
-                  <span className="font-semibold text-gray-800">QC#</span>{" "}
+                  <span className="font-semibold text-gray-800">QC#</span>{' '}
                   {qcNumber}
                 </div>
               </div>
 
               <div>
                 <div className="pb-2">
-                  <span className="font-semibold text-gray-800">Gr No:</span>{" "}
+                  <span className="font-semibold text-gray-800">Gr No:</span>{' '}
                   {testProduct.grNumber}
                 </div>
                 <div className="pb-2">
                   <span className="font-semibold text-gray-800">
                     Receive Date:
-                  </span>{" "}
+                  </span>{' '}
                   {
                     new Date(testProduct.receiveDate)
                       .toISOString()
-                      .split("T")[0]
+                      .split('T')[0]
                   }
                 </div>
                 <div className="pb-2">
-                  <span className="font-semibold text-gray-800">Lot No:</span>{" "}
+                  <span className="font-semibold text-gray-800">Lot No:</span>{' '}
                   {testProduct.lotNumber}
                 </div>
               </div>
@@ -314,7 +386,8 @@ const BatchRawMaterial = () => {
                         <td className="px-4 py-2 border-b text-gray-800">
                           <input
                             type="text"
-                            value={test.testName || ""}
+                            value={test.testName || ''}
+                            readOnly
                             onChange={(e) =>
                               setTests((prevTests) => {
                                 const newTests = [...prevTests];
@@ -331,7 +404,8 @@ const BatchRawMaterial = () => {
                         <td className="px-4 py-2 border-b text-gray-800">
                           <input
                             type="text"
-                            value={test.specifications || ""}
+                            value={test.specifications || ''}
+                            readOnly
                             onChange={(e) =>
                               setTests((prevTests) => {
                                 const newTests = [...prevTests];
@@ -356,7 +430,7 @@ const BatchRawMaterial = () => {
                               updateTestField(index, e.target.value)
                             }
                             onKeyDown={(e) => {
-                              if (e.key === "Enter") {
+                              if (e.key === 'Enter') {
                                 updateTestField(index, e.target.value);
                               }
                             }}
@@ -386,7 +460,7 @@ const BatchRawMaterial = () => {
             <label className="block text-gray-700 mb-2">
               QC Analyst Signature:
               <div className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-gray-50 rounded-md shadow-sm focus:outline-none focus:ring-themeColor focus:border-themeColor">
-                {localStorage.getItem("userName")}
+                {localStorage.getItem('userName')}
               </div>
             </label>
             <label className="block text-gray-700 mb-2">
@@ -451,9 +525,9 @@ const BatchRawMaterial = () => {
                       <td className="py-4 px-4 whitespace-nowrap">
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
-                            batch.remarks === "Fail"
-                              ? "border-red-800 bg-red-100 text-red-800"
-                              : "border-green-800 bg-green-100 text-green-800"
+                            batch.remarks === 'Fail'
+                              ? 'border-red-800 bg-red-100 text-red-800'
+                              : 'border-green-800 bg-green-100 text-green-800'
                           }`}
                         >
                           {batch.remarks}

@@ -1,11 +1,11 @@
-import { Popconfirm, message } from "antd";
-import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import apiClient from "../utils/interceptor";
+import {Popconfirm, message} from 'antd';
+import {useEffect, useState} from 'react';
+import {Link} from 'react-router-dom';
+import apiClient from '../utils/interceptor';
 
 const Instruments = () => {
   const [instruments, setInstruments] = useState([]);
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -13,10 +13,10 @@ const Instruments = () => {
       setLoading(true);
       try {
         const response = await apiClient.get('/instrument/getAllInstruments');
-        setInstruments(response.data || []); // Adjust based on your API response structure
+        setInstruments(response.data || []);
       } catch (error) {
-        console.error("Error fetching instruments:", error);
-        message.error("Failed to fetch instruments.");
+        console.error('Error fetching instruments:', error);
+        message.error('Failed to fetch instruments.');
       } finally {
         setLoading(false);
       }
@@ -30,30 +30,30 @@ const Instruments = () => {
   };
 
   const handleRefresh = () => {
-    setStatus("");
+    setStatus('');
   };
 
   const handleDelete = async (id) => {
     try {
       await apiClient.delete(`/instrument/Instrument/${id}`);
-      message.success("Instrument deleted successfully!");
+      message.success('Instrument deleted successfully!');
       setInstruments(instruments.filter((instrument) => instrument._id !== id));
     } catch (error) {
-      console.error("Error deleting instrument:", error);
-      message.error("Failed to delete instrument.");
+      console.error('Error deleting instrument:', error);
+      message.error('Failed to delete instrument.');
     }
   };
 
   const filteredInstruments = instruments.filter((Instrument) => {
     const statusMatch =
-      status === "" || Instrument.status.toString() === status;
+      status === '' || Instrument.status.toString() === status;
     return statusMatch;
   });
 
   return (
-    <div className="px-4 py-2 rounded-xl bg-white h-full border border-2 border-gray-200">
+    <div className="px-4 py-2 rounded-xl bg-white h-full border-2 border-gray-200">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-        <div style={{ fontFamily: "Roboto, sans-serif" }}>
+        <div style={{fontFamily: 'Roboto, sans-serif'}}>
           <h1 className="font-bold text-lg md:text-xl text-start text-themeColor">
             Instruments
           </h1>
@@ -83,7 +83,7 @@ const Instruments = () => {
             id="status"
             value={status}
             onChange={handleStatusChange}
-            className="w-full rounded-md px-3 py-2 border border-gray-300 bg-gray-50 rounded-lg focus:outline-none focus:ring-themeColor focus:border-themeColor"
+            className="w-full rounded-md px-3 py-2 border border-gray-300 bg-gray-50 focus:outline-none focus:ring-themeColor focus:border-themeColor"
           >
             <option value="">All</option>
             <option value="true">Active</option>
@@ -122,15 +122,15 @@ const Instruments = () => {
                           <div
                             className={`relative inline-block w-11 h-5 transition duration-200 ease-linear rounded-full cursor-default ${
                               instrument.status
-                                ? "bg-themeColor"
-                                : "bg-gray-300"
+                                ? 'bg-themeColor'
+                                : 'bg-gray-300'
                             }`}
                           >
                             <span
                               className={`absolute block w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-200 ease-in-out ${
                                 instrument.status
-                                  ? "translate-x-6"
-                                  : "translate-x-0"
+                                  ? 'translate-x-6'
+                                  : 'translate-x-0'
                               }`}
                             ></span>
                           </div>
@@ -138,8 +138,6 @@ const Instruments = () => {
                       </td>
                       <td className="py-4 px-4 space-x-2">
                         <div className="flex gap-2 justify-center">
-                          {/* <i className="fa-regular fa-eye"></i>
-                          <i className="fa-regular fa-pen-to-square"></i> */}
                           <Popconfirm
                             title="Are you sure you want to delete this instrument?"
                             okText="Yes"

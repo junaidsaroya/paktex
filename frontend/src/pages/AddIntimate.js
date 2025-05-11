@@ -1,32 +1,32 @@
-import React, { useEffect, useState } from "react";
-import "../App.css";
-import apiClient from "../utils/interceptor";
-import { message } from "antd";
-import { useNavigate } from "react-router-dom";
+import {useEffect, useState} from 'react';
+import '../App.css';
+import apiClient from '../utils/interceptor';
+import {message} from 'antd';
+import {useNavigate} from 'react-router-dom';
 
 const AddIntimate = () => {
   const [products, setProducts] = useState([]);
-  const [type, setType] = useState("");
-  const [productName, setProductName] = useState("");
-  const [lotNumber, setLotNumber] = useState("");
+  const [type, setType] = useState('');
+  const [productName, setProductName] = useState('');
+  const [lotNumber, setLotNumber] = useState('');
   const [receiveDate, setReceiveDate] = useState(
-    new Date().toISOString().split("T")[0]
+    new Date().toISOString().split('T')[0]
   );
-  const [supplierName, setSupplierName] = useState("");
-  const [grNumber, setrNumber] = useState("");
-  const [quantity, setQuantity] = useState("");
-  const [measurementType, setMeasurementType] = useState("");
-  const status = "Pending";
+  const [supplierName, setSupplierName] = useState('');
+  const [grNumber, setrNumber] = useState('');
+  const [quantity, setQuantity] = useState('');
+  const [measurementType, setMeasurementType] = useState('');
+  const status = 'Pending';
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await apiClient.get("/product/getAllProducts");
+        const response = await apiClient.get('/product/getAllProducts');
         setProducts(response.data.data || []);
       } catch (error) {
-        console.error("Error fetching products:", error);
-        message.error("Failed to fetch products.");
+        console.error('Error fetching products:', error);
+        message.error('Failed to fetch products.');
       }
     };
 
@@ -50,40 +50,37 @@ const AddIntimate = () => {
 
     try {
       const response = await apiClient.post(
-        "/intimateProduct/addIntimateProduct",
+        '/intimateProduct/addIntimateProduct',
         productData
       );
 
       if (response.status === 201) {
-        message.success("Product added successfully!");
+        message.success('Product added successfully!');
         setTimeout(() => {
-          navigate("/intimate");
+          navigate('/intimate');
         }, 1000);
       } else {
-        message.error("Failed to add product, please try again.");
+        message.error('Failed to add product, please try again.');
       }
     } catch (error) {
-      console.error("Error submitting product data:", error);
+      console.error('Error submitting product data:', error);
       if (error.response) {
         message.error(
-          `Error: ${error.response.data.message || "Failed to add product."}`
+          `Error: ${error.response.data.message || 'Failed to add product.'}`
         );
       } else {
-        message.error("An unexpected error occurred.");
+        message.error('An unexpected error occurred.');
       }
     }
   };
 
   return (
-    <div className="px-4 py-2 rounded-xl bg-white h-full border border-2 border-gray-200 text-start">
+    <div className="px-4 py-2 rounded-xl bg-white h-full border-2 border-gray-200 text-start">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
-        <div style={{ fontFamily: "Roboto, sans-serif" }}>
+        <div style={{fontFamily: 'Roboto, sans-serif'}}>
           <h1 className="font-bold text-lg md:text-lg text-themeColor">
-            Add Product
+            Add Product to intimate
           </h1>
-          <p className="text-xs text-gray-500 font-semibold">
-            Add new Product to intimate
-          </p>
         </div>
       </div>
       <form onSubmit={handleSubmit}>
@@ -130,7 +127,7 @@ const AddIntimate = () => {
                   required
                   value={receiveDate}
                   onChange={() =>
-                    setReceiveDate(new Date().toISOString().split("T")[0])
+                    setReceiveDate(new Date().toISOString().split('T')[0])
                   }
                   readOnly
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-gray-50 rounded-md shadow-sm focus:outline-none focus:ring-themeColor focus:border-themeColor"
@@ -202,7 +199,7 @@ const AddIntimate = () => {
                     <option value="" disabled>
                       Select Measurement Type
                     </option>
-                    <option value="M">M</option>
+                    <option value="Meter">Meter</option>
                     <option value="Liter">Liter</option>
                     <option value="Kg">Kg</option>
                     <option value="Inch">Inch</option>

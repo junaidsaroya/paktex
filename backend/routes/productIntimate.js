@@ -5,7 +5,6 @@ import { addIntimate, deleteIntimate, getAllIntimates, getIntimateById, getIntim
 const productIntimateRouter = express.Router();
 
 productIntimateRouter.get("/getAllIntimateProducts", authenticate, getAllIntimates);
-
 productIntimateRouter.get("/intimateProduct/getAllBatch", authenticate, getIntimateProduct);
 productIntimateRouter.get("/getIntimateProductById/:id", authenticate, getIntimateById);
 productIntimateRouter.post("/addIntimateProduct", authenticate, addIntimate);

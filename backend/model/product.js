@@ -1,11 +1,19 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const productVariantSchema = new mongoose.Schema({
   length: {
     type: String,
     required: true,
   },
+  lengthUnit: {
+    type: String,
+    required: true,
+  },
   width: {
+    type: String,
+    default: null,
+  },
+  widthUnit: {
     type: String,
     default: null,
   },
@@ -14,23 +22,23 @@ const productVariantSchema = new mongoose.Schema({
 const testSchema = new mongoose.Schema({
   testName: {
     type: String,
-    required: true, // Test name is mandatory
+    required: true,
   },
   specifications: {
     type: String,
-    required: true, // Specifications are mandatory
+    required: true,
   },
   acceptanceCriteria: {
     type: String,
-    required: true, // Acceptance criteria are mandatory
+    required: true,
   },
   rejectionCriteria: {
     type: String,
-    required: true, // Rejection criteria are mandatory
+    required: true,
   },
   instrument: {
     type: String,
-    required: true, // Instrument selection is mandatory
+    required: true,
   },
 });
 
@@ -42,11 +50,11 @@ const productSchema = new mongoose.Schema(
     },
     productVariants: [productVariantSchema],
     tests: [testSchema],
-    status: { type: Boolean, required: false, default: true },
+    status: {type: Boolean, required: false, default: true},
   },
-  { timestamps: true }
+  {timestamps: true}
 );
 
-const Product = mongoose.model("Product", productSchema);
+const Product = mongoose.model('Product', productSchema);
 
 export default Product;

@@ -1,40 +1,44 @@
-import React, { useEffect, useState } from "react";
-import { Popconfirm, Modal, message } from "antd";
-import "../App.css";
-import AddTeamMember from "../components/AddTeamMember";
-import axios from "axios";
-
+import React, {useEffect, useState} from 'react';
+import {Popconfirm, Modal, message} from 'antd';
+import '../App.css';
+import AddTeamMember from '../components/AddTeamMember';
+import axios from 'axios';
+import {Select} from 'antd';
+const {Option} = Select;
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const Team = () => {
-  // Static user list
-  const [users, setUsers] = useState("");
-  const [status, setStatus] = useState("");
-  const [access, setAccess] = useState("");
+  const [users, setUsers] = useState('');
+  const [status, setStatus] = useState('');
+  const [access, setAccess] = useState('');
   const [addTeamModalVisible, setAddTeamModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [editUserModalVisible, setEditUserModalVisible] = useState(false);
+  const [editAccess, setEditAccess] = useState('');
+  const [editStatus, setEditStatus] = useState(false);
 
   const fetchUserData = async () => {
-    setLoading(true); // Ensure loader is shown during the API call
-    const token = localStorage.getItem("token");
+    setLoading(true);
+    const token = localStorage.getItem('token');
     if (!token) {
-      message.error("Not authenticated");
+      message.error('Not authenticated');
       return;
     }
 
     const config = {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: {Authorization: `Bearer ${token}`},
     };
 
     try {
-      const { data: usersData } = await axios.get(
+      const {data: usersData} = await axios.get(
         `${API_BASE_URL}/auth/getAllUsers`,
         config
       );
       setUsers(usersData || []);
     } catch (error) {
-      console.error("Error fetching user data:", error);
-      message.error("Failed to fetch user data");
+      console.error('Error fetching user data:', error);
+      message.error('Failed to fetch user data');
     } finally {
       setLoading(false);
     }
@@ -43,6 +47,7 @@ const Team = () => {
   useEffect(() => {
     fetchUserData();
   }, []);
+
   const handleStatusChange = (e) => {
     setStatus(e.target.value);
   };
@@ -53,29 +58,28 @@ const Team = () => {
 
   const handleDelete = async (id) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem('token');
       const config = {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       };
 
-      await axios.delete(`${API_BASE_URL}/auth/deleteUser/${id}`, config);
-      message.success("Member deleted successfully");
+      await axios.delete(`${API_BASE_URL}/auth/user/${id}`, config);
+      message.success('Member deleted successfully');
       fetchUserData();
     } catch (error) {
-      message.error("Failed to delete Member");
+      message.error('Failed to delete Member');
     }
   };
 
   const filteredUsers = Array.isArray(users)
-  ? users.filter((user) => {
-      const statusMatch = status === "" || user.status.toString() === status;
-      const accessMatch = access === "" || user.access.includes(access);
-      return statusMatch && accessMatch;
-    })
-  : [];
-
+    ? users.filter((user) => {
+        const statusMatch = status === '' || user.status.toString() === status;
+        const accessMatch = access === '' || user.access.includes(access);
+        return statusMatch && accessMatch;
+      })
+    : [];
 
   const handleAddTeam = () => {
     setAddTeamModalVisible(true);
@@ -90,10 +94,55 @@ const Team = () => {
     fetchUserData();
   };
 
+  const handleEditUser = (user) => {
+    setSelectedUser(user);
+    setEditAccess(user.access);
+    setEditStatus(user.status);
+    setEditUserModalVisible(true);
+  };
+
+  const handleEditAccessChange = (value) => setEditAccess(value);
+
+  const handleEditStatusChange = (checked) => {
+    setEditStatus(checked);
+  };
+
+  const handleUpdateUser = async () => {
+    if (!editAccess) {
+      message.error('Access level is required!');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const config = {
+        headers: {Authorization: `Bearer ${token}`},
+      };
+
+      const response = await axios.put(
+        `${API_BASE_URL}/auth/user/${selectedUser._id}`,
+        {
+          access: editAccess,
+          status: editStatus,
+        },
+        config
+      );
+
+      if (response.status === 200) {
+        message.success('User updated successfully!');
+        setEditUserModalVisible(false);
+        fetchUserData();
+      }
+    } catch (error) {
+      message.error('Failed to update user.');
+      console.error('Error updating user:', error);
+    }
+  };
+
   return (
-    <div className="px-4 py-2 rounded-xl bg-white h-full border border-2 border-gray-200">
+    <div className="px-4 py-2 rounded-xl bg-white h-full border-2 border-gray-200">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-        <div style={{ fontFamily: "Roboto, sans-serif" }}>
+        <div style={{fontFamily: 'Roboto, sans-serif'}}>
           <h1 className="font-bold text-lg md:text-xl text-start text-themeColor">
             Team
           </h1>
@@ -127,7 +176,7 @@ const Team = () => {
                 id="status"
                 value={status}
                 onChange={handleStatusChange}
-                className="w-full rounded-md px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-themeColor focus:border-themeColor"
+                className="w-full rounded-md px-3 py-2 border border-gray-300 focus:outline-none focus:ring-themeColor focus:border-themeColor"
               >
                 <option value="">All</option>
                 <option value="true">Active</option>
@@ -139,7 +188,7 @@ const Team = () => {
                 id="access"
                 value={access}
                 onChange={handleAccessChange}
-                className="w-full rounded-md px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-themeColor focus:border-themeColor"
+                className="w-full rounded-md px-3 py-2 border border-gray-300 focus:outline-none focus:ring-themeColor focus:border-themeColor"
               >
                 <option value="">All Access</option>
                 <option value="Intimate">Intimate</option>
@@ -196,14 +245,14 @@ const Team = () => {
                             <div className="flex items-center justify-center">
                               <div
                                 className={`relative inline-block w-11 h-5 transition duration-200 ease-linear rounded-full cursor-default ${
-                                  user.status ? "bg-themeColor" : "bg-gray-300"
+                                  user.status ? 'bg-themeColor' : 'bg-gray-300'
                                 }`}
                               >
                                 <span
                                   className={`absolute block w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-200 ease-in-out ${
                                     user.status
-                                      ? "translate-x-6"
-                                      : "translate-x-0"
+                                      ? 'translate-x-6'
+                                      : 'translate-x-0'
                                   }`}
                                 ></span>
                               </div>
@@ -211,14 +260,17 @@ const Team = () => {
                           </td>
                           <td className="py-4 px-4 space-x-2">
                             <div className="flex gap-2 justify-center">
-                              <i className="fa-regular fa-pen-to-square"></i>
+                              <i
+                                className="fa-regular fa-pen-to-square cursor-pointer"
+                                onClick={() => handleEditUser(user)}
+                              ></i>
                               <Popconfirm
                                 title="Are you sure you want to delete this user?"
                                 okText="Yes"
                                 cancelText="No"
                                 onConfirm={() => handleDelete(user._id)}
                               >
-                                <i className="fa-regular fa-trash-can"></i>
+                                <i className="fa-regular fa-trash-can cursor-pointer"></i>
                               </Popconfirm>
                             </div>
                           </td>
@@ -249,6 +301,56 @@ const Team = () => {
         footer={null}
       >
         <AddTeamMember onSuccess={handleSuccess} />
+      </Modal>
+      <Modal
+        visible={editUserModalVisible}
+        onCancel={() => setEditUserModalVisible(false)}
+        onOk={handleUpdateUser}
+        title="Edit User Access"
+        okText="Update"
+        cancelText="Cancel"
+      >
+        <div className="flex flex-col space-y-4 border-t pt-2">
+          <div>
+            <label className="block text-gray-700 text-sm font-bold mb-2">
+              Status
+            </label>
+            <div
+              className={`relative inline-block w-11 h-5 transition duration-200 ease-linear rounded-full cursor-default ${
+                editStatus ? 'bg-themeColor' : 'bg-gray-300'
+              }`}
+              onClick={() => handleEditStatusChange(!editStatus)}
+            >
+              <span
+                className={`absolute block w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-200 ease-in-out ${
+                  editStatus ? 'translate-x-6' : 'translate-x-0'
+                }`}
+              ></span>
+            </div>
+            <span className="ml-2 text-sm text-gray-600">
+              {editStatus ? 'Active' : 'Inactive'}
+            </span>
+          </div>
+
+          <div>
+            <label className="block text-gray-700 text-sm font-bold mb-2">
+              Access
+            </label>
+            <Select
+              value={editAccess}
+              onChange={handleEditAccessChange}
+              mode="multiple"
+              className="w-full"
+            >
+              <Option value="Intimate">Intimate</Option>
+              <Option value="LIMS First">LIMS First</Option>
+              <Option value="LIMS Second">LIMS Second</Option>
+              <Option value="Production">Production</Option>
+              <Option value="GLP">GLP</Option>
+              <Option value="QMS">QMS</Option>
+            </Select>
+          </div>
+        </div>
       </Modal>
     </div>
   );

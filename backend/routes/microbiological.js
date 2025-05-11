@@ -10,3 +10,4 @@ microbiologicalRouter.get("/microbiological/:id", authenticate, getMicrobiologic
 microbiologicalRouter.put('/microbiological/:id', authenticate, updateMicrobiologicalData);
 
 export default microbiologicalRouter;
+

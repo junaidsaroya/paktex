@@ -1,5 +1,5 @@
-import { jwtDecode } from "jwt-decode";
-import { setIsLoggedIn, setLoading } from "../slices/app";
+import {jwtDecode} from 'jwt-decode';
+import {setIsLoggedIn, setLoading} from '../slices/app';
 
 const isTokenExpired = (decodedToken) => {
   const currentTime = Date.now() / 1000;
@@ -7,8 +7,8 @@ const isTokenExpired = (decodedToken) => {
 };
 
 export const checkToken = (dispatch) => {
-  dispatch(setLoading(true)); // Set loading to true at the start
-  const token = localStorage.getItem("token");
+  dispatch(setLoading(true));
+  const token = localStorage.getItem('token');
 
   if (!token) {
     dispatch(setIsLoggedIn(false));
@@ -17,13 +17,13 @@ export const checkToken = (dispatch) => {
   try {
     const decodedToken = jwtDecode(token);
     if (isTokenExpired(decodedToken)) {
-      localStorage.removeItem("token");
+      localStorage.removeItem('token');
       dispatch(setIsLoggedIn(false));
     } else {
       dispatch(setIsLoggedIn(true));
     }
   } catch (error) {
-    localStorage.removeItem("token");
+    localStorage.removeItem('token');
     dispatch(setIsLoggedIn(false));
   }
 };

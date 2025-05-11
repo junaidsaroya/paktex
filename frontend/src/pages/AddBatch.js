@@ -1,34 +1,34 @@
-import { message } from "antd";
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import apiClient from "../utils/interceptor";
+import {message} from 'antd';
+import {useEffect, useState} from 'react';
+import {useNavigate} from 'react-router-dom';
+import apiClient from '../utils/interceptor';
 
 const AddBatch = () => {
   const [products, setProducts] = useState([]);
-  const [selectedProduct, setSelectedProduct] = useState("");
+  const [selectedProduct, setSelectedProduct] = useState('');
   const navigate = useNavigate();
-  const [batchNumber, setBatchNumber] = useState("");
-  const [sterile, setSterile] = useState("true");
-  const [expDate, setExpDate] = useState("");
-  const [mfgDate, setMfgDate] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [batchLength, setBatchLength] = useState("");
+  const [batchNumber, setBatchNumber] = useState('');
+  const [sterile, setSterile] = useState('true');
+  const [expDate, setExpDate] = useState('');
+  const [mfgDate, setMfgDate] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [batchLength, setBatchLength] = useState('');
   const [productSize, setProductSize] = useState([
-    { length: "", lengthType: "", width: "", widthType: "" },
+    {length: '', lengthType: '', width: '', widthType: ''},
   ]);
-  const [numberOfWorkers, setNumberOfWorkers] = useState("");
-  const [perWorkerTarget, setPerWorkerTarget] = useState("");
+  const [numberOfWorkers, setNumberOfWorkers] = useState('');
+  const [perWorkerTarget, setPerWorkerTarget] = useState('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await apiClient.get("/product/getAllProducts");
+        const response = await apiClient.get('/product/getAllProducts');
         setProducts(response.data.data || []);
       } catch (error) {
-        console.error("Error fetching products:", error);
-        message.error("Failed to fetch products.");
+        console.error('Error fetching products:', error);
+        message.error('Failed to fetch products.');
       }
     };
 
@@ -65,24 +65,24 @@ const AddBatch = () => {
     };
 
     try {
-      const response = await apiClient.post("/batch/addBatch", batchData);
-      message.success("Batch added successfully!");
+      const response = await apiClient.post('/batch/addBatch', batchData);
+      message.success('Batch added successfully!');
       setTimeout(() => {
-        navigate("/batch");
+        navigate('/batch');
       }, 1000);
       console.log(response.data);
     } catch (error) {
-      console.error("Error adding batch:", error);
-      message.error("Failed to add batch.");
+      console.error('Error adding batch:', error);
+      message.error('Failed to add batch.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="px-4 py-2 rounded-xl bg-white h-full border border-2 border-gray-200 text-start">
+    <div className="px-4 py-2 rounded-xl bg-white h-full border-2 border-gray-200 text-start">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
-        <div style={{ fontFamily: "Roboto, sans-serif" }}>
+        <div style={{fontFamily: 'Roboto, sans-serif'}}>
           <h1 className="font-bold text-lg md:text-lg text-themeColor">
             Add Batch
           </h1>
@@ -116,7 +116,7 @@ const AddBatch = () => {
               <label className="block text-gray-700 mb-2">
                 MFG Date:
                 <input
-                  type="month" // Change the input type to "month"
+                  type="month"
                   required
                   value={mfgDate}
                   onChange={(e) => setMfgDate(e.target.value)}
@@ -165,8 +165,8 @@ const AddBatch = () => {
                   <input
                     type="radio"
                     value="true"
-                    checked={sterile === "true"}
-                    onChange={() => setSterile("true")}
+                    checked={sterile === 'true'}
+                    onChange={() => setSterile('true')}
                   />
                   <span className="ml-2">Sterile</span>
                 </label>
@@ -174,8 +174,8 @@ const AddBatch = () => {
                   <input
                     type="radio"
                     value="false"
-                    checked={sterile === "false"}
-                    onChange={() => setSterile("false")}
+                    checked={sterile === 'false'}
+                    onChange={() => setSterile('false')}
                   />
                   <span className="ml-2">Non-Sterile</span>
                 </label>
@@ -224,23 +224,21 @@ const AddBatch = () => {
               <h2 className="text-gray-700">Product Size:</h2>
               {productSize.map((item, index) => (
                 <div key={index} className="grid grid-cols-4 gap-2 mb-2">
-                  {/* Length Input */}
                   <input
                     type="number"
                     placeholder="Length"
                     value={item.length}
                     onChange={(e) =>
-                      handleProductSizeChange(index, "length", e.target.value)
+                      handleProductSizeChange(index, 'length', e.target.value)
                     }
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-gray-50 rounded-md shadow-sm focus:outline-none focus:ring-themeColor focus:border-themeColor"
                   />
-                  {/* Length Type Dropdown */}
                   <select
                     value={item.lengthType}
                     onChange={(e) =>
                       handleProductSizeChange(
                         index,
-                        "lengthType",
+                        'lengthType',
                         e.target.value
                       )
                     }
@@ -249,30 +247,28 @@ const AddBatch = () => {
                     <option value="" disabled>
                       Select Type
                     </option>
-                    <option value="M">M</option>
+                    <option value="Meter">Meter</option>
                     <option value="Liter">Liter</option>
                     <option value="Kg">Kg</option>
                     <option value="Inch">Inch</option>
                     <option value="Centimeter">Centimeter</option>
                     <option value="Millimeter">Millimeter</option>
                   </select>
-                  {/* Width Input */}
                   <input
                     type="number"
                     placeholder="Width (Optional)"
                     value={item.width}
                     onChange={(e) =>
-                      handleProductSizeChange(index, "width", e.target.value)
+                      handleProductSizeChange(index, 'width', e.target.value)
                     }
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-gray-50 rounded-md shadow-sm focus:outline-none focus:ring-themeColor focus:border-themeColor"
                   />
-                  {/* Width Type Dropdown */}
                   <select
                     value={item.widthType}
                     onChange={(e) =>
                       handleProductSizeChange(
                         index,
-                        "widthType",
+                        'widthType',
                         e.target.value
                       )
                     }
@@ -281,7 +277,7 @@ const AddBatch = () => {
                     <option value="" disabled>
                       Select Type
                     </option>
-                    <option value="M">M</option>
+                    <option value="Meter">Meter</option>
                     <option value="Liter">Liter</option>
                     <option value="Kg">Kg</option>
                     <option value="Inch">Inch</option>
@@ -311,7 +307,7 @@ const AddBatch = () => {
             className="py-2 px-6 w-40 bg-themeGradient text-white font-semibold rounded-md shadow-sm"
             disabled={loading}
           >
-            {loading ? "Saving..." : "SAVE"}
+            {loading ? 'Saving...' : 'SAVE'}
           </button>
         </div>
       </form>

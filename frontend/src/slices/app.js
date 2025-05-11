@@ -1,4 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit";
+import {createSlice} from '@reduxjs/toolkit';
 
 const initialState = {
   isLoggedIn: false,
@@ -7,12 +7,12 @@ const initialState = {
 };
 
 export const appSlice = createSlice({
-  name: "app",
+  name: 'app',
   initialState,
   reducers: {
     setIsLoggedIn: (state, action) => {
       state.isLoggedIn = action.payload;
-      state.isLoading = false; // Set loading to false
+      state.isLoading = false;
     },
     setLoading: (state, action) => {
       state.isLoading = action.payload;
@@ -23,6 +23,7 @@ export const appSlice = createSlice({
   },
 });
 
-export const { setIsLoggedIn, setLoading, setIntimateProducts } = appSlice.actions;
+export const {setIsLoggedIn, setLoading, setIntimateProducts} =
+  appSlice.actions;
 
 export default appSlice.reducer;

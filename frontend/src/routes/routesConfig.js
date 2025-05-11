@@ -1,3 +1,4 @@
+import ACReport from "../components/ACReport";
 import AddBatch from "../pages/AddBatch";
 import AddChemical from "../pages/AddChemical";
 import AddInstrument from "../pages/AddInstrument";
@@ -22,121 +23,125 @@ import Qms from "../pages/Qms";
 import Stores from "../pages/Stores";
 import Team from "../pages/Team";
 
-
 export const routesConfig = [
   {
-    path: '/login',
+    path: "/login",
     element: <LaunchScreen />,
     protected: false,
   },
   {
-    path: '/dashboard',
+    path: "/dashboard",
     element: <Dashboard />,
     protected: true,
   },
   {
-    path: '/',
+    path: "/",
     element: <Home />,
     protected: true,
   },
   {
-    path: '/intimate',
+    path: "/intimate",
     element: <Intimate />,
     protected: true,
   },
   {
-    path: '/addIntimate',
+    path: "/addIntimate",
     element: <AddIntimate />,
     protected: true,
   },
   {
-    path: '/batch',
+    path: "/batch",
     element: <BatchManagement />,
     protected: true,
   },
   {
-    path: '/addBatch',
+    path: "/addBatch",
     element: <AddBatch />,
     protected: true,
   },
   {
-    path: '/limsFirst',
+    path: "/limsFirst",
     element: <Lims />,
     protected: true,
   },
   {
-    path: '/limsSecond',
+    path: "/limsSecond",
     element: <Lims2 />,
     protected: true,
   },
   {
-    path: '/production',
+    path: "/production",
     element: <Production />,
     protected: true,
   },
   {
-    path: '/glp',
+    path: "/glp",
     element: <Glp />,
     protected: true,
   },
   {
-    path: 'qms',
+    path: "qms",
     element: <Qms />,
     protected: true,
   },
   {
-    path: '/stores',
+    path: "/stores",
     element: <Stores />,
     protected: true,
   },
   {
-    path: '/dispatchBay',
+    path: "/dispatchBay",
     element: <DispatchBay />,
     protected: true,
   },
   {
-    path: '/users',
+    path: "/users",
     element: <Team />,
     protected: true,
   },
   {
-    path: '/products',
+    path: "/products",
     element: <Products />,
     protected: true,
   },
   {
-    path: '/addProduct',
+    path: "/addProduct",
     element: <AddProduct />,
     protected: true,
   },
   {
-    path: '/instruments',
+    path: "/instruments",
     element: <Instruments />,
     protected: true,
   },
   {
-    path: '/addInstrument',
+    path: "/addInstrument",
     element: <AddInstrument />,
     protected: true,
   },
   {
-    path: '/medias',
+    path: "/medias",
     element: <Media />,
     protected: true,
   },
   {
-    path: '/addMedia',
+    path: "/addMedia",
     element: <AddMedia />,
     protected: true,
   },
   {
-    path: '/chemicals',
+    path: "/chemicals",
     element: <Chemical />,
     protected: true,
   },
   {
-    path: '/addChemical',
+    path: "/addChemical",
     element: <AddChemical />,
     protected: true,
+  },
+  {
+    path: "/acReport",
+    element: <ACReport />,
+    protected: false,
   },
 ];

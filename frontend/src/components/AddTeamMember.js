@@ -23,7 +23,7 @@ const AddTeamMember = ({ onSuccess }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!name || !email || !password || !access || !parentId) {
+    if (!name || !email || !password || access.length === 0 || !parentId) {
       message.error("Please fill in all fields.");
       return;
     }
@@ -123,7 +123,7 @@ const AddTeamMember = ({ onSuccess }) => {
           </label>
           <Input.Password
             id="password"
-            type={showPassword ? 'text' : 'password'}
+            type={showPassword ? "text" : "password"}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 shadow-sm focus:outline-none focus:ring-themeColor focus:border-themeColor"
@@ -144,6 +144,7 @@ const AddTeamMember = ({ onSuccess }) => {
             onChange={(value) => setAccess(value)}
             className="w-full rounded-lg"
             mode="multiple"
+            required
             placeholder="Add Access"
           >
             <Option value="Intimate">Intimate</Option>

@@ -1,39 +1,54 @@
-import React, { useEffect, useState } from "react";
-import apiClient from "../utils/interceptor";
-import { message } from "antd";
+import {useEffect, useState} from 'react';
+import apiClient from '../utils/interceptor';
+import {message} from 'antd';
+import {jsPDF} from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const Microbiological = () => {
   const [microbiologicalList, setMicrobiologicalList] = useState([]);
-  const [productName, setProductName] = useState("");
+  const [productName, setProductName] = useState('');
   const [products, setProducts] = useState([]);
-  const [selectedProduct, setSelectedProduct] = useState("");
+  const [selectedProduct, setSelectedProduct] = useState('');
   const [loading, setLoading] = useState(false);
-  const [releaseNote, setReleaseNote] = useState("");
-  const [remarks, setRemarks] = useState("");
+  const [releaseNote, setReleaseNote] = useState('');
+  const [remarks, setRemarks] = useState('');
   const [tests, setTests] = useState([]);
 
   const handleChange = (rowIndex, colIndex, value) => {
-    if (value === "C" || value === "T" || value === "") {
+    if (tests.length === 15) return;
+
+    if (value === 'C' || value === 'T' || value === '') {
       setTests((prevTests) => {
         const newTests = [...prevTests];
         newTests[rowIndex].values[colIndex] = value;
 
-        const hasC = newTests.some((test) => test.values.includes("C"));
-        setRemarks(hasC ? "Fail" : "Pass");
+        let shouldFail = false;
+
+        if ([0, 1, 2].includes(colIndex) && value === 'T') {
+          shouldFail = true;
+        }
+
+        if ([3, 4, 5].includes(colIndex) && value === 'T') {
+          shouldFail = true;
+        }
+
+        if ([6, 7, 8].includes(colIndex) && value === 'C') {
+          shouldFail = true;
+        }
+
+        setRemarks(shouldFail ? 'Fail' : 'Pass');
 
         return newTests;
       });
     }
   };
-
   const handleCancel = () => {
     setSelectedProduct(null);
   };
-
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response1 = await apiClient.get("/batch/getAllBatch");
+        const response1 = await apiClient.get('/batch/getAllBatch');
         const activeBatch = response1.data.filter(
           (batch) => batch.status === true
         );
@@ -41,25 +56,24 @@ const Microbiological = () => {
         const products = activeBatch;
 
         const response2 = await apiClient.get(
-          "/etoSterlization/etoSterlization"
+          '/etoSterlization/etoSterlization'
         );
         const productName =
           response2.data.data.length > 0
             ? response2.data.data[0].productName
-            : "";
+            : '';
 
         const matchedProduct = products.find(
           (product) => product.productName === productName
         );
         setProducts(matchedProduct ? [matchedProduct] : []);
       } catch (error) {
-        message.error("Failed to fetch products.");
+        message.error('Failed to fetch products.');
       }
     };
 
     fetchProducts();
   }, []);
-
   const handleProductSelection = async (event) => {
     const selectedValue = event.target.value;
     const selectedProductObj = products.find(
@@ -67,7 +81,6 @@ const Microbiological = () => {
     );
 
     setSelectedProduct(selectedProductObj);
-
     try {
       const response = await apiClient.get(
         `/microbiological/microbiological?productName=${selectedValue}`
@@ -80,53 +93,50 @@ const Microbiological = () => {
         // Extract productName from the first object in the array
         setProductName(previousData[0].productName);
       } else {
-        message.error("Product not found.");
+        // message.error("Product not found.");
       }
 
       console.log(
-        "productName:",
-        previousData.length > 0 ? previousData[0].productName : "N/A"
+        'productName:',
+        previousData.length > 0 ? previousData[0].productName : 'N/A'
       );
 
       // Transform test data
       const transformedTests = previousData.flatMap((item) =>
         item.tests.map((test) => ({
-          testDate: test.testDate.split("T")[0],
-          values: test.result.split(","),
+          testDate: test.testDate.split('T')[0],
+          values: test.result.split(','),
         }))
       );
 
       // Add a new test entry for the current date
-      const currentDate = new Date().toISOString().split("T")[0];
+      const currentDate = new Date().toISOString().split('T')[0];
       const newTest = {
         testDate: currentDate,
-        values: Array(9).fill(""),
+        values: Array(9).fill(''),
       };
 
       const updatedTests = [...transformedTests, newTest].slice(-14);
       setTests(updatedTests);
     } catch (error) {
-      message.error("Failed to fetch previous data.");
+      message.error('Failed to fetch previous data.');
     }
   };
-
   const fetchMicrobiologicalList = async () => {
     setLoading(true);
     try {
-      const response = await apiClient.get("/microbiological/microbiological");
+      const response = await apiClient.get('/microbiological/microbiological');
       const microbiologicalData = response.data.data || [];
       setMicrobiologicalList(microbiologicalData);
     } catch (error) {
-      message.error("Failed to fetch Microbiological List.");
+      message.error('Failed to fetch Microbiological List.');
     } finally {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     fetchMicrobiologicalList();
   }, []);
-
   const handleSubmit = async () => {
     const payload = {
       productName: selectedProduct?.productName,
@@ -134,9 +144,9 @@ const Microbiological = () => {
       releaseNote,
       tests: tests.map((test) => ({
         testDate: test.testDate,
-        result: test.values.join(","),
+        result: test.values.join(','),
       })),
-      microbiologist: localStorage.getItem("userName"),
+      microbiologist: localStorage.getItem('userName'),
       batchNumber: selectedProduct?.batchNumber,
     };
 
@@ -155,7 +165,7 @@ const Microbiological = () => {
           );
         } else {
           response = await apiClient.post(
-            "/microbiological/microbiological",
+            '/microbiological/microbiological',
             payload
           );
         }
@@ -166,12 +176,12 @@ const Microbiological = () => {
       }
 
       setTests([]);
-      setRemarks("");
-      setSelectedProduct("");
-      message.success("Test saved successfully.");
+      setRemarks('');
+      setSelectedProduct('');
+      message.success('Test saved successfully.');
       fetchMicrobiologicalList();
     } catch (error) {
-      message.error("Failed to save test.");
+      message.error('Failed to save test.');
     }
   };
   const sendToStore = async () => {
@@ -181,15 +191,88 @@ const Microbiological = () => {
     };
 
     try {
-      if (remarks === "Pass") {
-        await apiClient.post(
-          "/etoStoreForSterlization/etoStoreForSterlization",
-          payload
-        );
-        message.success("Send to store successfully.");
+      if (remarks === 'Pass') {
+        await apiClient.post('/finishGoodStore/finishGoodStore', payload);
+        message.success('Send to store successfully.');
+        deleteFromSterileStore(selectedProduct);
       }
     } catch (error) {
-      message.error("Failed to send to store.");
+      message.error('Failed to send to store.');
+    }
+  };
+  const deleteFromSterileStore = async () => {
+    try {
+      await apiClient.delete(
+        `/etoQuarantineStore/etoQuarantineStore/${encodeURIComponent(
+          selectedProduct.productName
+        )}`
+      );
+    } catch (error) {
+      console.error('Error deleting batch:', error);
+      message.error('Failed to delete batch.');
+    }
+  };
+  const handleViewReport = () => {
+    const doc = new jsPDF();
+
+    doc.setFontSize(18);
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const text = 'InProcessQC Report';
+    const textWidth =
+      (doc.getStringUnitWidth(text) * doc.internal.getFontSize()) /
+      doc.internal.scaleFactor;
+    doc.text(text, (pageWidth - textWidth) / 2, 20);
+
+    doc.setFontSize(12);
+    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 15, 30);
+
+    const headers = [['Product', 'Batch Number', 'Microbiologist', 'Remarks']];
+    const data = microbiologicalList.map((m) => [
+      m.productName || 'N/A',
+      m.batchNumber || 'N/A',
+      m.microbiologist || 'N/A',
+      m.remarks || 'N/A',
+    ]);
+
+    autoTable(doc, {
+      head: headers,
+      body: data,
+      startY: 35,
+      styles: {
+        fontSize: 10,
+        cellPadding: 3,
+        halign: 'center',
+      },
+      headStyles: {
+        fillColor: [65, 184, 72],
+        textColor: 255,
+        fontStyle: 'bold',
+      },
+      columnStyles: {
+        0: {halign: 'left'},
+        1: {halign: 'center'},
+        2: {halign: 'center'},
+        3: {halign: 'center'},
+      },
+      alternateRowStyles: {
+        fillColor: [245, 245, 245],
+      },
+    });
+
+    const pdfBlob = doc.output('blob');
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+
+    const newWindow = window.open();
+    if (newWindow) {
+      newWindow.location.href = pdfUrl;
+    } else {
+      const link = document.createElement('a');
+      link.href = pdfUrl;
+      link.target = '_blank';
+      link.download = 'InProcessQC_report.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
   };
   return (
@@ -198,7 +281,7 @@ const Microbiological = () => {
         <div className="flex gap-2">
           <select
             required
-            value={selectedProduct ? selectedProduct.productName : ""}
+            value={selectedProduct ? selectedProduct.productName : ''}
             onChange={handleProductSelection}
             className="block w-52 px-3 py-2 border border-gray-300 bg-gray-50 rounded-md shadow-sm focus:outline-none focus:ring-themeColor focus:border-themeColor"
           >
@@ -223,6 +306,13 @@ const Microbiological = () => {
             </div>
           )}
         </div>
+        <button
+          onClick={handleViewReport}
+          className="text-black border border-[#DCE3E3] px-3 py-1 rounded-md flex items-center gap-2"
+        >
+          <i className="fa-solid fa-eye text-lg"></i>
+          <span>View Report</span>
+        </button>
       </div>
       {selectedProduct && (
         <div className="p-2 border border-gray-300 rounded-md shadow-sm">
@@ -235,9 +325,7 @@ const Microbiological = () => {
           />
 
           <div className="relative mb-4 w-full">
-            {/* Outer wrapper to enforce scrolling */}
             <div className="overflow-x-auto w-full">
-              {/* Inner wrapper to prevent layout shift */}
               <div className="min-w-[1000px] inline-block align-middle">
                 <div className="overflow-hidden rounded-lg border border-gray-300">
                   <table className="w-full min-w-full table-auto divide-y divide-gray-200">
@@ -266,7 +354,7 @@ const Microbiological = () => {
                         </th>
                       </tr>
                       <tr className="text-center">
-                        {["Sample", "Negative Control", "Positive Control"].map(
+                        {['Sample', 'Negative Control', 'Positive Control'].map(
                           (label, i) =>
                             Array(3)
                               .fill(null)
@@ -306,6 +394,7 @@ const Microbiological = () => {
                                   )
                                 }
                                 className="border p-2 rounded-md w-14 text-center"
+                                disabled={tests.length === 15}
                               />
                             </td>
                           ))}
@@ -331,7 +420,7 @@ const Microbiological = () => {
             <label className="block text-gray-700">
               Microbiologist Signature:
               <div className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-gray-50 rounded-md shadow-sm">
-                {localStorage.getItem("userName")}
+                {localStorage.getItem('userName')}
               </div>
             </label>
             <label className="block text-gray-700">
@@ -355,6 +444,7 @@ const Microbiological = () => {
             <button
               type="submit"
               onClick={handleSubmit}
+              disabled={tests.length === 15}
               className="py-2 px-6 w-40 bg-themeGradient hover:bg-themeGradientHover text-white font-semibold rounded-md shadow-sm"
             >
               SAVE
@@ -401,9 +491,9 @@ const Microbiological = () => {
                       <td className="py-4 px-4 whitespace-nowrap">
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
-                            microbiological.remarks === "Fail"
-                              ? "border-red-800 bg-red-100 text-red-800"
-                              : "border-green-800 bg-green-100 text-green-800"
+                            microbiological.remarks === 'Fail'
+                              ? 'border-red-800 bg-red-100 text-red-800'
+                              : 'border-green-800 bg-green-100 text-green-800'
                           }`}
                         >
                           {microbiological.remarks}

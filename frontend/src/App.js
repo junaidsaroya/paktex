@@ -1,27 +1,26 @@
-import "./App.css";
-import { Navigate, Route, Routes } from "react-router-dom";
-import Home from "./pages/Home";
-import { useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { checkToken } from "./utils/auth";
-import ProtectedRoute from "./routes/ProtectedRoutes";
-import { routesConfig } from "./routes/routesConfig";
+import './App.css';
+import {Navigate, Route, Routes} from 'react-router-dom';
+import Home from './pages/Home';
+import {useEffect} from 'react';
+import {useSelector, useDispatch} from 'react-redux';
+import {checkToken} from './utils/auth';
+import ProtectedRoute from './routes/ProtectedRoutes';
+import {routesConfig} from './routes/routesConfig';
 function App() {
   const dispatch = useDispatch();
-  const { isLoggedIn, isLoading } = useSelector((state) => state.app);
+  const {isLoggedIn, isLoading} = useSelector((state) => state.app);
 
   useEffect(() => {
     checkToken(dispatch);
   }, [dispatch]);
 
   if (isLoading) {
-    // Show a loading spinner or placeholder while authentication is being checked
     return <div>Loading...</div>;
   }
   return (
     <div className="App">
       <Routes>
-        {routesConfig.map(({ path, element, protected: isProtected }) => {
+        {routesConfig.map(({path, element, protected: isProtected}) => {
           const routeElement = isProtected ? (
             <ProtectedRoute>
               <Home>{element}</Home>
@@ -29,7 +28,7 @@ function App() {
           ) : (
             element
           );
-          if (path === "/" && isLoggedIn) {
+          if (path === '/' && isLoggedIn) {
             return (
               <Route
                 key={path}
